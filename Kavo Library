@@ -1,4 +1,3 @@
-function lib()
 local Kavo = {}
 
 local tween = game:GetService("TweenService")
@@ -2646,4 +2645,3 @@ function Kavo.CreateLib(kavName, themeList)
     return Tabs
 end
 return Kavo
-end
