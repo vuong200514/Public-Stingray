@@ -1,16 +1,9 @@
-repeat wait() until game:IsLoaded()
-local Executor
-if type(getexecutor()) == "string" then
-    Executor = getexecutor()
-elseif type(identifyexecutor()) == "string" then
-    Executor = identifyexecutor()
-else 
-    Executor = "N/A"
-end
-local UniversalSupport = {"vegax","appleware","wave","macsploit is the best fucking exploit ever made","arceus x","cubix","delta","codex","evon","trigon"}
-if table.find(UniversalSupport,string.lower(Executor)) then
+local Executor = identifyexecutor()
+local Support = {"vegax","appleware","wave","macsploit is the best fucking exploit ever made.","arceus x","cubix","delta","codex","evon","trigon"}
+if table.find(Support,string.lower(Executor)) then
+    print("Hello")
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Manta/Public-Stingray/refs/heads/main/UniversalStingray"))()
-    
 else
+    print("Test")
    loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Manta/Public-Stingray/refs/heads/main/SolaraStingray"))()
 end
