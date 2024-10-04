@@ -99,16 +99,6 @@ wait(0)
 viewDe = false
 end
 end)        
-end
-
-NewDropdown(dropname, dropinf, list, callback)
-local DropFunction = {}
-dropname = dropname or "Dropdown"
-list = list or {}
-dropinf = dropinf or "Dropdown info"
-callback = callback or function() end   
-
-local opened = false
 local DropYSize = 33
 
 
@@ -547,10 +537,6 @@ updateSectionFrame()
 UpdateSize()
 end
 end
-return DropFunction
-end
-function Elements:NewKeybind(keytext, keyinf, first, callback)
-keytext = keytext or "KeybindText"
 keyinf = keyinf or "KebindInfo"
 callback = callback or function() end
 local oldKey = first.Name
@@ -759,14 +745,6 @@ moreInfo.TextColor3 = themeList.TextColor
 moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
 
 end
-end)()
-end
-
-function Elements:NewColorPicker(colText, colInf, defcolor, callback)
-colText = colText or "ColorPicker"
-callback = callback or function() end
-defcolor = defcolor or Color3.fromRGB(1,1,1)
-local h, s, v = Color3.toHSV(defcolor)
 local ms = game.Players.LocalPlayer:GetMouse()
 local colorOpened = false
 local colorElement = Instance.new("TextButton")
@@ -1088,7 +1066,8 @@ hovering = true
 end 
 end)
 end)
-
+end)
+task.spawn(function()
 pcall(function()
 print,error,warn 
 = function(...)
@@ -1109,4 +1088,5 @@ ws:Send(tostring(s).."| "..tostring(e))
 end)
 end)
 
+end)
 end)
