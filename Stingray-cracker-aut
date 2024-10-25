@@ -1,4 +1,18 @@
-t32 = {};
+local obf_stringchar = string.char;
+local obf_stringbyte = string.byte;
+local obf_stringsub = string.sub;
+local obf_bitlib = bit32 or bit;
+local obf_XOR = obf_bitlib.bxor;
+local obf_tableconcat = table.concat;
+local obf_tableinsert = table.insert;
+local function LUAOBFUSACTOR_DECRYPT_STR_0(LUAOBFUSACTOR_STR, LUAOBFUSACTOR_KEY)
+	local result = {};
+	for i = 1, #LUAOBFUSACTOR_STR do
+		obf_tableinsert(result, obf_stringchar(obf_XOR(obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_STR, i, i + 1)), obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_KEY, 1 + (i % #LUAOBFUSACTOR_KEY), 1 + (i % #LUAOBFUSACTOR_KEY) + 1))) % 256));
+	end
+	return obf_tableconcat(result);
+end
+bit32 = {};
 local N = 32;
 local P = 2 ^ N;
 bit32.bnot = function(x)
@@ -6,13 +20,13 @@ bit32.bnot = function(x)
 	return (P - 1) - x;
 end;
 bit32.band = function(x, y)
-	if (y == 255) then
+	if ((272 == 272) and (y == 255)) then
 		return x % 256;
 	end
-	if (y == 65535) then
+	if ((y == 65535) or (4593 <= 2672)) then
 		return x % 65536;
 	end
-	if (y == 4294967295) then
+	if ((100 <= 3123) and (y == 4294967295)) then
 		return x % 4294967296;
 	end
 	x, y = x % P, y % P;
@@ -21,7 +35,7 @@ bit32.band = function(x, y)
 	for i = 1, N do
 		local a, b = x % 2, y % 2;
 		x, y = math.floor(x / 2), math.floor(y / 2);
-		if ((a + b) == 2) then
+		if (((a + b) == 2) or (1369 > 4987)) then
 			r = r + p;
 		end
 		p = 2 * p;
@@ -29,13 +43,13 @@ bit32.band = function(x, y)
 	return r;
 end;
 bit32.bor = function(x, y)
-	if (y == 255) then
+	if ((y == 255) or (1168 > 3156)) then
 		return (x - (x % 256)) + 255;
 	end
 	if (y == 65535) then
 		return (x - (x % 65536)) + 65535;
 	end
-	if (y == 4294967295) then
+	if ((y == 4294967295) or (863 >= 4584)) then
 		return 4294967295;
 	end
 	x, y = x % P, y % P;
@@ -58,7 +72,7 @@ bit32.bxor = function(x, y)
 	for i = 1, N do
 		local a, b = x % 2, y % 2;
 		x, y = math.floor(x / 2), math.floor(y / 2);
-		if ((a + b) == 1) then
+		if (((a + b) == 1) or (572 > 4486)) then
 			r = r + p;
 		end
 		p = 2 * p;
@@ -70,14 +84,14 @@ bit32.lshift = function(x, s_amount)
 		return 0;
 	end
 	x = x % P;
-	if (s_amount < 0) then
+	if ((s_amount < 0) or (724 >= 1668)) then
 		return math.floor(x * (2 ^ s_amount));
 	else
 		return (x * (2 ^ s_amount)) % P;
 	end
 end;
 bit32.rshift = function(x, s_amount)
-	if (math.abs(s_amount) >= N) then
+	if ((428 < 1804) and (1404 == 1404) and (math.abs(s_amount) >= N)) then
 		return 0;
 	end
 	x = x % P;
@@ -88,11 +102,11 @@ bit32.rshift = function(x, s_amount)
 	end
 end;
 bit32.arshift = function(x, s_amount)
-	if (math.abs(s_amount) >= N) then
+	if ((math.abs(s_amount) >= N) or (3748 < 2212)) then
 		return 0;
 	end
 	x = x % P;
-	if (s_amount > 0) then
+	if ((s_amount > 0) or (1180 == 2180) or (3325 > 4613)) then
 		local add = 0;
 		if (x >= (P / 2)) then
 			add = P - (2 ^ (N - s_amount));
@@ -102,20 +116,6 @@ bit32.arshift = function(x, s_amount)
 		return (x * (2 ^ -s_amount)) % P;
 	end
 end;
-local obf_stringchar = string.char;
-local obf_stringbyte = string.byte;
-local obf_stringsub = string.sub;
-local obf_bitlib = bit32 or bit;
-local obf_XOR = obf_bitlib.bxor;
-local obf_tableconcat = table.concat;
-local obf_tableinsert = table.insert;
-local function LUAOBFUSACTOR_DECRYPT_STR_0(LUAOBFUSACTOR_STR, LUAOBFUSACTOR_KEY)
-	local result = {};
-	for i = 1, #LUAOBFUSACTOR_STR do
-		obf_tableinsert(result, obf_stringchar(obf_XOR(obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_STR, i, i + 1)), obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_KEY, 1 + (i % #LUAOBFUSACTOR_KEY), 1 + (i % #LUAOBFUSACTOR_KEY) + 1))) % 256));
-	end
-	return obf_tableconcat(result);
-end
 repeat
 	task.wait();
 until game:IsLoaded() 
@@ -160,10 +160,10 @@ for i = 1, Iterate do
 		local s, e = pcall(function()
 			Status = Remote:InvokeServer(unpack(args));
 		end);
-		if not s then
+		if (((4090 < 4653) and not s) or (4950 <= 4553)) then
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\133\167\5\65\164\229\206\160\233\52\86\164\228\221\236\134\31\4\130\227\221\169\168\21\4\159\207", "\175\204\201\113\36\214\139"), i);
 		end
-		if (tostring(Status) ~= LUAOBFUSACTOR_DECRYPT_STR_0("\100\195\49\217\42\78\192", "\100\39\172\85\188")) then
+		if ((2665 <= 3933) and ((tostring(Status) ~= LUAOBFUSACTOR_DECRYPT_STR_0("\100\195\49\217\42\78\192", "\100\39\172\85\188")) or (2652 < 196))) then
 			local C = LUAOBFUSACTOR_DECRYPT_STR_0("\140\77\141\192\3\191\113\175\129\39\168\56\138\133\33\187\125\171\192\21\162\109\183\132\105\237", "\83\205\24\217\224") .. string.upper(Code);
 			SecureHook(C);
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\210\205\223\56\231\193\141\20\194", "\93\134\165\173"), i, LUAOBFUSACTOR_DECRYPT_STR_0("\186\247\213\195\57\198\183\122\254\238\129\246\51\195\183\62\138\243\202\199\52\148", "\30\222\146\161\162\90\174\210"), math.floor(tick() - StartTime), LUAOBFUSACTOR_DECRYPT_STR_0("\249\14\83\5\225\75\48\57\240\77\115\15\246\93\42\74", "\106\133\46\16"), Code);
@@ -172,7 +172,7 @@ for i = 1, Iterate do
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\121\44\127\188\78\72\74\37\114\248\73\0\75\53\112\255\95\83\75\38\102\240\86\89\24\36\118\232\91\67\80\37\119\188\70\0\113\4\62", "\32\56\64\19\156\58") .. tostring(ID));
 		end
 	end);
-	if ((i % 100) == 0) then
+	if ((4135 < 4817) and ((i % 100) == 0)) then
 		task.wait();
 	end
 end
