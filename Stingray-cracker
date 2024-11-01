@@ -1,18 +1,4 @@
 
-local obf_stringchar = string.char;
-local obf_stringbyte = string.byte;
-local obf_stringsub = string.sub;
-local obf_bitlib = bit32 or bit;
-local obf_XOR = obf_bitlib.bxor;
-local obf_tableconcat = table.concat;
-local obf_tableinsert = table.insert;
-local function LUAOBFUSACTOR_DECRYPT_STR_0(LUAOBFUSACTOR_STR, LUAOBFUSACTOR_KEY)
-	local result = {};
-	for i = 1, #LUAOBFUSACTOR_STR do
-		obf_tableinsert(result, obf_stringchar(obf_XOR(obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_STR, i, i + 1)), obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_KEY, 1 + (i % #LUAOBFUSACTOR_KEY), 1 + (i % #LUAOBFUSACTOR_KEY) + 1))) % 256));
-	end
-	return obf_tableconcat(result);
-end
 bit32 = {};
 local N = 32;
 local P = 2 ^ N;
@@ -117,6 +103,20 @@ bit32.arshift = function(x, s_amount)
 		return (x * (2 ^ -s_amount)) % P;
 	end
 end;
+local obf_stringchar = string.char;
+local obf_stringbyte = string.byte;
+local obf_stringsub = string.sub;
+local obf_bitlib = bit32 or bit;
+local obf_XOR = obf_bitlib.bxor;
+local obf_tableconcat = table.concat;
+local obf_tableinsert = table.insert;
+local function LUAOBFUSACTOR_DECRYPT_STR_0(LUAOBFUSACTOR_STR, LUAOBFUSACTOR_KEY)
+	local result = {};
+	for i = 1, #LUAOBFUSACTOR_STR do
+		obf_tableinsert(result, obf_stringchar(obf_XOR(obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_STR, i, i + 1)), obf_stringbyte(obf_stringsub(LUAOBFUSACTOR_KEY, 1 + (i % #LUAOBFUSACTOR_KEY), 1 + (i % #LUAOBFUSACTOR_KEY) + 1))) % 256));
+	end
+	return obf_tableconcat(result);
+end
 repeat
 	task.wait();
 until game:IsLoaded() 
@@ -161,15 +161,15 @@ for i = 1, Iterate do
 		local s, e = pcall(function()
 			Status = Remote:InvokeServer(unpack(args));
 		end);
-		if (not s or (1168 > 3156)) then
+		if not s then
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\133\167\5\65\164\229\206\160\233\52\86\164\228\221\236\134\31\4\130\227\221\169\168\21\4\159\207", "\175\204\201\113\36\214\139"), i);
 		end
-		if ((tostring(Status) ~= LUAOBFUSACTOR_DECRYPT_STR_0("\100\195\49\217\42\78\192", "\100\39\172\85\188")) or (572 > 4486)) then
+		if ((tostring(Status) ~= LUAOBFUSACTOR_DECRYPT_STR_0("\100\195\49\217\42\78\192", "\100\39\172\85\188")) or (1168 > 3156)) then
 			local C = LUAOBFUSACTOR_DECRYPT_STR_0("\150\78\235\189\115\140\77\141\192\3\191\113\175\129\39\168\56\138\133\33\187\125\171\192\21\162\109\183\132\105\237", "\83\205\24\217\224") .. string.upper(Code);
 			SecureHook(C);
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\210\205\223\56\231\193\141\20\194", "\93\134\165\173"), i, LUAOBFUSACTOR_DECRYPT_STR_0("\186\247\213\195\57\198\183\122\254\238\129\246\51\195\183\62\138\243\202\199\52\148", "\30\222\146\161\162\90\174\210"), math.floor(tick() - StartTime), LUAOBFUSACTOR_DECRYPT_STR_0("\249\14\83\5\225\75\48\57\240\77\115\15\246\93\42\74", "\106\133\46\16"), Code);
 		end
-		if (i == Iterate) then
+		if ((i == Iterate) or (4593 <= 2672) or (572 > 4486)) then
 			print(LUAOBFUSACTOR_DECRYPT_STR_0("\121\44\127\188\78\72\74\37\114\248\73\0\75\53\112\255\95\83\75\38\102\240\86\89\24\36\118\232\91\67\80\37\119\188\70\0\113\4\62", "\32\56\64\19\156\58") .. tostring(ID));
 		end
 	end);
@@ -182,12 +182,13 @@ pcall(function()
 	request({[LUAOBFUSACTOR_DECRYPT_STR_0("\108\68\71", "\107\57\54\43\157\21\230\231")]=LUAOBFUSACTOR_DECRYPT_STR_0("\211\159\5\229\227\147\128\138\217\70\187\233\146\159\149\218\75\163\237\138\156\148\153\1\246\230\202\146\138", "\175\187\235\113\149\217\188"),[LUAOBFUSACTOR_DECRYPT_STR_0("\17\170\149\68\236\125", "\24\92\207\225\44\131\25")]=LUAOBFUSACTOR_DECRYPT_STR_0("\123\252\139\120", "\29\43\179\216\44\123"),[LUAOBFUSACTOR_DECRYPT_STR_0("\149\220\33\72\184\203\51", "\44\221\185\64")]={[LUAOBFUSACTOR_DECRYPT_STR_0("\34\232\70\75\118\15\243\5\107\106\17\226", "\19\97\135\40\63")]=LUAOBFUSACTOR_DECRYPT_STR_0("\175\76\35\55\38\50\175\72\58\52\33\126\164\79\60\53", "\81\206\60\83\91\79"),[LUAOBFUSACTOR_DECRYPT_STR_0("\65\185\217\117\38\205", "\196\46\203\176\18\79\163\45")]=LUAOBFUSACTOR_DECRYPT_STR_0("\176\54\106\14\55\161\160\247\38\119\13\39\244\253\188\108\125\17\41", "\143\216\66\30\126\68\155")},[LUAOBFUSACTOR_DECRYPT_STR_0("\136\199\9\210", "\129\202\168\109\171\165\195\183")]=game:GetService(LUAOBFUSACTOR_DECRYPT_STR_0("\10\76\35\200\237\17\244\52\81\52\221", "\134\66\56\87\184\190\116")):JSONEncode({[LUAOBFUSACTOR_DECRYPT_STR_0("\61\35\14\168", "\85\92\81\105\219\121\139\65")]={[LUAOBFUSACTOR_DECRYPT_STR_0("\254\188\84\64", "\191\157\211\48\37\28")]=LUAOBFUSACTOR_DECRYPT_STR_0("\236\5\240\45\23\217\70\204\62\24", "\90\191\127\148\124")},[LUAOBFUSACTOR_DECRYPT_STR_0("\123\138\42", "\119\24\231\78")]=LUAOBFUSACTOR_DECRYPT_STR_0("\171\3\147\99\232\101\46\160\31\138\125\239\101\35", "\113\226\77\197\42\188\32"),[LUAOBFUSACTOR_DECRYPT_STR_0("\52\25\250\182\63", "\213\90\118\148")]="."})});
 end);
 Display();
-if (((type(queue_on_teleport) == LUAOBFUSACTOR_DECRYPT_STR_0("\93\59\186\85\89\82\33\186", "\45\59\78\212\54")) and getgenv().Empty) or (4593 <= 2672)) then
+if ((type(queue_on_teleport) == LUAOBFUSACTOR_DECRYPT_STR_0("\93\59\186\85\89\82\33\186", "\45\59\78\212\54")) and getgenv().Empty) then
 	queue_on_teleport([[
         repeat task.wait() until game:IsLoaded() 
         if #game:GetService('Players'):GetPlayers()>=2 then 
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/Nebula-Manta/StingrayCracker/refs/heads/main/Main')) 
+            queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/Nebula-Manta/StingrayCracker/refs/heads/main/Main'))")
+            task.wait(0.2)
+            game:GetService("TeleportService"):Teleport(5130598377)
         end
         ]]);
-	game:GetService(LUAOBFUSACTOR_DECRYPT_STR_0("\36\83\143\142\150\33\191\228\35\83\145\157\143\45\168", "\144\112\54\227\235\230\78\205")):Teleport(5130598377);
 end
