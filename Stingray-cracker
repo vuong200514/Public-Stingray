@@ -184,6 +184,7 @@ Display();
 
 pcall(function()
 if type(queue_on_teleport) == "function" and getgenv().Empty then
-    queue_on_teleport("repeat task.wait() until game:IsLoaded() if #game:GetService('Players'):GetPlayers()>=2 then game:GetService('TeleportService'):Teleport(5130598377) loadstring(game:HttpGet('https://raw.githubusercontent.com/Nebula-Manta/StingrayCracker/refs/heads/main/Main')) end")
+    queue_on_teleport("repeat task.wait() until game:IsLoaded() if #game:GetService('Players'):GetPlayers()>=2 then loadstring(game:HttpGet('https://raw.githubusercontent.com/Nebula-Manta/StingrayCracker/refs/heads/main/Main')) end")
+    game:GetService('TeleportService'):Teleport(5130598377)
 end
 end)
