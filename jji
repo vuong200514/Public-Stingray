@@ -1,0 +1,153 @@
+repeat
+    task.wait()
+until game:IsLoaded()
+
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local Boosts = {"Luck Vial","Withered Beckoning Cat"}
+local Cats = {"Withered Beckoning Cat","Wooden Beckoning Cat","Polished Beckoning Cat"}
+
+repeat
+    task.wait()
+until LocalPlayer.Character
+
+local s, e = pcall(function()
+    queue_on_teleport('loadstring(game:HttpGet("http://www.stingray-digital.online/script/jji"))()')()
+end)
+
+if not s then
+    print("Better put this in auto execute, your thing doesn't support queue on tp")
+end
+
+local Objects = workspace:WaitForChild("Objects")
+local Mobs = Objects:WaitForChild("Mobs")
+local Spawns = Objects:WaitForChild("Spawns")
+local Drops = Objects:WaitForChild("Drops")
+local Effects = Objects:WaitForChild("Effects")
+local Destructibles = Objects:WaitForChild("Destructibles")
+
+Effects.ChildAdded:Connect(function(Child)
+    if Child.Name ~= "DomainSphere" then 
+        game:GetService("Debris"):AddItem(Child, 0)
+    end
+end)
+
+Destructibles.ChildAdded:Connect(function(Child)
+    game:GetService("Debris"):AddItem(Child, 0)
+end)
+
+local s,e = pcall(function()
+    game:GetService("ReplicatedStorage").Remotes.Client.CollectChest.OnClientInvoke = function()
+        print("Chest Collected")
+        return {}
+    end
+end)
+if not s then 
+    print("Chest collection not working :( ")
+end
+
+local Root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+
+local LootUI = LocalPlayer.PlayerGui:WaitForChild("Loot")
+local Flip = LootUI:WaitForChild("Frame"):WaitForChild("Flip")
+local Replay = LocalPlayer.PlayerGui:WaitForChild("ReadyScreen"):WaitForChild("Frame"):WaitForChild("Replay")
+
+local function Skill(Name)
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat")
+        :WaitForChild("Skill"):FireServer(Name)
+end
+
+local function OpenChest()
+    for i, v in ipairs(Drops:GetChildren()) do
+        if v:FindFirstChild("Collect") then
+            fireproximityprompt(v.Collect)
+        end
+    end
+end
+
+local MouseTarget = Instance.new("Frame",LocalPlayer.PlayerGui:FindFirstChildWhichIsA("ScreenGui"))
+MouseTarget.Size = UDim2.new(0,0,0,0)
+MouseTarget.Position = UDim2.new(0.5,0,0.5,0)
+MouseTarget.AnchorPoint = Vector2.new(0.5,0.5)
+local X,Y = MouseTarget.AbsolutePosition.X,MouseTarget.AbsolutePosition.Y
+
+
+local function Click(Button)
+    Button.AnchorPoint = Vector2.new(0.5, 0.5)
+    Button.Size = UDim2.new(50, 0, 50, 0)
+    Button.Position = UDim2.new(0.5,0,0.5,0)
+    Button.ZIndex = 20
+    Button.ImageTransparency = 1
+    for i,v in ipairs(Button:GetChildren()) do
+        if v:IsA("TextLabel") then
+            v:Destroy()
+        end
+    end
+    local VIM = game:GetService("VirtualInputManager")
+    VIM:SendMouseButtonEvent(X, Y, 0, true, game, 0)
+    task.wait()
+    VIM:SendMouseButtonEvent(X, Y, 0, false, game, 0)
+    task.wait()
+end
+
+local function Init()
+    Root.CFrame = Spawns.BossSpawn.CFrame + Vector3.new(0, 10, 0)
+    task.wait()
+end
+
+local function Domain(Name)
+    Skill("Domain Expansion: "..Name)
+    task.wait()
+end
+
+repeat
+    Init()
+until Mobs:FindFirstChildWhichIsA("Model")
+
+local Boss = Mobs:FindFirstChildWhichIsA("Model").Name
+print(Boss)
+for _,Item in pairs(Boosts) do
+    task.wait()
+    if (not table.find(Cats,Item)) or LocalPlayer.ReplicatedData.luckBoost.duration.Value==0 then
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Data")
+        :WaitForChild("EquipItem"):InvokeServer(Item)
+        print(Item.." used")
+    end
+end
+
+
+
+task.wait(1)
+
+repeat Domain("Unequivocal Love") until workspace.Objects.Effects:FindFirstChild("DomainSphere")
+
+
+
+task.spawn(function()
+    while Mobs:FindFirstChild(Boss) do
+        Skill("Maximum: Jacob's Ladder")
+        task.wait()
+    end
+end)
+
+repeat
+    task.wait()
+until Drops:FindFirstChild("Chest")
+
+task.spawn(function()
+    while Drops:FindFirstChild("Chest") do
+        if not LootUI.Enabled then
+            OpenChest()
+        end
+        task.wait()
+    end
+end)
+
+repeat
+    task.wait()
+until not Drops:FindFirstChild("Chest")
+
+task.wait()
+for i = 1, 10, 1 do
+    Click(Replay)
+    task.wait(1)
+end
