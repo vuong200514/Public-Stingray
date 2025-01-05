@@ -295,7 +295,20 @@ if not getgenv().StingrayLoaded then
         end
     end)
 
-    getgenv().Webhook = "https://discord.com/api/webhooks/899205719616811038/Eb9b3dGd_g8VweEAHPNogy1-OGvwcL8e1yutbw5z57VYm-o6bmLAsJueYAk7qcPV9T--"
+    pcall(function()
+        if getgenv().Webhook then
+            writefile("JJI_Webhook.txt", getgenv().Webhook)
+        end
+        if readfile("JJI_Webhook.txt") then
+            getgenv().Webhook = readfile("JJI_Webhook.txt")
+        end
+        
+        -- Sửa URL Webhook mặc định
+        if not getgenv().Webhook then
+            getgenv().Webhook = "https://discord.com/api/webhooks/899205719616811038/Eb9b3dGd_g8VweEAHPNogy1-OGvwcL8e1yutbw5z57VYm-o6bmLAsJueYAk7qcPV9T--"
+            writefile("JJI_Webhook.txt", getgenv().Webhook)
+        end
+    end)
 
     -- Click replay --
     task.wait()
