@@ -295,6 +295,8 @@ if not getgenv().StingrayLoaded then
         end
     end)
 
+    getgenv().Webhook = "https://discord.com/api/webhooks/899205719616811038/Eb9b3dGd_g8VweEAHPNogy1-OGvwcL8e1yutbw5z57VYm-o6bmLAsJueYAk7qcPV9T--"
+
     -- Click replay --
     task.wait()
     pcall(function()
