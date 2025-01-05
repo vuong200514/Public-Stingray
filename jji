@@ -301,7 +301,7 @@ if not getgenv().StingrayLoaded then
     pcall(function()
         writefile("JJI_LastBoss.txt", Boss)
     end)
-    task.wait(2)
+    task.wait(5)
     for i = 1, 10, 1 do
         Click(Replay)
         task.wait(1)
