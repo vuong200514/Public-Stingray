@@ -1,11 +1,12 @@
 repeat task.wait() until game:IsLoaded()
 
 if not getgenv().StingrayLoaded then
-    getgenv().StingrayLoaded = true -- Init
+    getgenv().StingrayLoaded = true
+    -- Init
     local StartTime = tick()
     local LocalPlayer = game:GetService("Players").LocalPlayer
 
-    -- Load Configs
+    -- Load Configs--
     -- Webhook
     pcall(function()
         if getgenv().Webhook then
@@ -41,18 +42,15 @@ if not getgenv().StingrayLoaded then
             getgenv().LuckBoosts = {"Luck Vial"}
         end
     end)
-
     if not s then
         print("Luck Boosts Error:", e)
     end
+    print("INSTANT KILL: "..InstantKill)
 
-    print("INSTANT KILL: " .. InstantKill)
-
-    -- UI
+    -- UI --
     local UI = loadstring(game:HttpGet("http://www.stingray-digital.online/script/ui"))()
     local MainUI = UI.InitUI()
     local Toggle = "ON"
-
     pcall(function()
         if isfile("JJI_State.txt") then
             Toggle = readfile("JJI_State.txt")
@@ -60,15 +58,12 @@ if not getgenv().StingrayLoaded then
             writefile("JJI_State.txt", "ON")
         end
     end)
-
-    print("QUEUE TOGGLE: " .. Toggle)
-
+    print("QUEUE TOGGLE: "..Toggle)
     if Toggle == "ON" then
         UI.SetState(true)
     else
         UI.SetState(false)
     end
-
     UI.SetMain(function(State)
         if State == 1 then
             Toggle = "ON"
@@ -90,13 +85,13 @@ if not getgenv().StingrayLoaded then
         end)
     end
 
-    -- Black screen check & Players in lobby check
+    -- Black screen check & Players in lobby check--
     task.spawn(function()
         task.wait(10)
         -- Uncomment this if you want to do it with other players
         -- if #game:GetService("Players"):GetPlayers() > 1 and game.PlaceId ~= 10450270085 and game.PlaceId ~= 119359147980471 then
-        --     -- idk place id for boss queue
-        --     game:GetService("TeleportService"):Teleport(10450270085)
+        -- idk place id for boss queue
+        -- game:GetService("TeleportService"):Teleport(10450270085)
         -- end
         task.wait(110)
         game:GetService("TeleportService"):Teleport(10450270085)
@@ -120,6 +115,10 @@ if not getgenv().StingrayLoaded then
     repeat task.wait() until LocalPlayer.Character
     local Root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
+    if not s then
+        print("Better put this in auto execute, your thing doesn't support queue on tp:", e)
+    end
+
     local Objects = workspace:WaitForChild("Objects")
     local Mobs = Objects:WaitForChild("Mobs")
     local Spawns = Objects:WaitForChild("Spawns")
@@ -130,7 +129,7 @@ if not getgenv().StingrayLoaded then
     local Flip = LootUI:WaitForChild("Frame"):WaitForChild("Flip")
     local Replay = LocalPlayer.PlayerGui:WaitForChild("ReadyScreen"):WaitForChild("Frame"):WaitForChild("Replay")
 
-    -- Destroy fx
+    -- Destroy fx --
     Effects.ChildAdded:Connect(function(Child)
         if Child.Name ~= "DomainSphere" then
             game:GetService("Debris"):AddItem(Child, 0)
@@ -145,16 +144,17 @@ if not getgenv().StingrayLoaded then
         game:GetService("Debris"):AddItem(Child, 0)
     end)
 
-    -- Uh, ignore this spaghetti way of determining screen center
+    -- Uh, ignore this spaghetti way of determining screen center --
     local MouseTarget = Instance.new("Frame", LocalPlayer.PlayerGui:FindFirstChildWhichIsA("ScreenGui"))
     MouseTarget.Size = UDim2.new(0, 0, 0, 0)
     MouseTarget.Position = UDim2.new(0.5, 0, 0.5, 0)
     MouseTarget.AnchorPoint = Vector2.new(0.5, 0.5)
     local X, Y = MouseTarget.AbsolutePosition.X, MouseTarget.AbsolutePosition.Y
 
-    -- Funcs
+    -- Funcs --
     local function Skill(Name)
-        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat"):WaitForChild("Skill"):FireServer(Name)
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat")
+            :WaitForChild("Skill"):FireServer(Name)
     end
 
     local function OpenChest()
@@ -196,34 +196,27 @@ if not getgenv().StingrayLoaded then
         task.wait()
     end
 
-    -- Farm start
+    -- Farm start --
     repeat InitTP() until Mobs:FindFirstChildWhichIsA("Model")
     local Boss = Mobs:FindFirstChildWhichIsA("Model").Name
     game:GetService("ReplicatedStorage").Remotes.Client.GetClosestTarget.OnClientInvoke = function()
         return Mobs[Boss].Humanoid
     end
-    print("Aim hooked to " .. Boss)
+    print("Aim hooked to "..Boss)
 
-    Skill("Infinity: Mugen")
-
-    -- Use boosts
-    local function UseBoosts()
-        for i, v in ipairs(getgenv().LuckBoosts) do
-            local name = v
-            game:GetService("ReplicatedStorage").Remotes.Client.UseBoost:FireServer(name)
-            task.wait()
+    -- Close replay UI --
+    task.wait(1)
+    pcall(function()
+        Replay.Visible = false
+    end)
+    -- Start farming --
+    local ToggleFarm = true
+    while ToggleFarm do
+        if Mobs:FindFirstChildWhichIsA("Model") then
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat")
+                :WaitForChild("Skill"):FireServer("AutoAttack")
         end
+        task.wait(0.01)
     end
-    UseBoosts()
 
-    -- Loop
-    while true do
-        if Toggle == "OFF" then
-            break
-        end
-
-        OpenChest()
-        Click(Flip)
-        task.wait(1)
-    end
 end
