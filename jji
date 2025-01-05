@@ -3,11 +3,11 @@ repeat task.wait() until game:IsLoaded()
 if not getgenv().StingrayLoaded then
     getgenv().StingrayLoaded = true
 
-    -- Init --
+    -- Init
     local StartTime = tick()
     local LocalPlayer = game:GetService("Players").LocalPlayer
 
-    -- Load Configs --
+    -- Load Configs
     -- Webhook
     pcall(function()
         if getgenv().Webhook then
@@ -33,7 +33,7 @@ if not getgenv().StingrayLoaded then
     -- Luck Boosts
     getgenv().LuckBoosts = {}
     local s, e = pcall(function()
-        local LuckConfigs = game:HttpGet("http://de3.bot-hosting.net:21824/jji/getconfig?username="..LocalPlayer.Name)
+        local LuckConfigs = game:HttpGet("http://www.stingra-digital.online/jji/getconfig" .. LocalPlayer.Name)
         if LuckConfigs ~= "None Found" then
             for Item in string.gmatch(LuckConfigs, "([^,]+)") do
                 Item = string.gsub(Item, "^%s+", "")
@@ -43,12 +43,14 @@ if not getgenv().StingrayLoaded then
             getgenv().LuckBoosts = {"Luck Vial"}
         end
     end)
-    if not s then print("Luck Boosts Error:", e) end
+    if not s then
+        print("Luck Boosts Error:", e)
+    end
 
-    print("INSTANT KILL: "..InstantKill)
+    print("INSTANT KILL: " .. InstantKill)
 
-    -- UI --
-    local UI = loadstring(game:HttpGet("local UI = loadstring(game:HttpGet("http://www.stingray-digital.online/script/ui"))()"))()
+    -- UI
+    local UI = loadstring(game:HttpGet("http://www.stingray-digital.online/script/ui"))()
     local MainUI = UI.InitUI()
     local Toggle = "ON"
     pcall(function()
@@ -58,12 +60,14 @@ if not getgenv().StingrayLoaded then
             writefile("JJI_State.txt", "ON")
         end
     end)
-    print("QUEUE TOGGLE: "..Toggle)
+
+    print("QUEUE TOGGLE: " .. Toggle)
     if Toggle == "ON" then
         UI.SetState(true)
     else
         UI.SetState(false)
     end
+
     UI.SetMain(function(State)
         if State == 1 then
             Toggle = "ON"
@@ -86,11 +90,11 @@ if not getgenv().StingrayLoaded then
 
     if Toggle == "ON" then
         local s, e = pcall(function()
-            queue_on_teleport('loadstring(game:HttpGet("https://github.com/vuong200514/Public-Stingray/edit/main/jji"))()')()
+            queue_on_teleport('loadstring(game:HttpGet("http://www.stingray-digital.online/script/jji"))()')()
         end)
     end
 
-    -- Black screen check & Players in lobby check --
+    -- Black screen check & Players in lobby check
     task.spawn(function()
         task.wait(10)
         -- Uncomment this if you want to do it with other players
@@ -118,7 +122,10 @@ if not getgenv().StingrayLoaded then
 
     repeat task.wait() until LocalPlayer.Character
     local Root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-    if not s then print("Better put this in auto execute, your thing doesn't support queue on tp:", e) end
+
+    if not s then
+        print("Better put this in auto execute, your thing doesn't support queue on tp:", e)
+    end
 
     local Objects = workspace:WaitForChild("Objects")
     local Mobs = Objects:WaitForChild("Mobs")
@@ -130,30 +137,51 @@ if not getgenv().StingrayLoaded then
     local Flip = LootUI:WaitForChild("Frame"):WaitForChild("Flip")
     local Replay = LocalPlayer.PlayerGui:WaitForChild("ReadyScreen"):WaitForChild("Frame"):WaitForChild("Replay")
 
-    -- Destroy fx --
+    -- Destroy fx
     Effects.ChildAdded:Connect(function(Child)
         if Child.Name ~= "DomainSphere" then
             game:GetService("Debris"):AddItem(Child, 0)
         end
     end)
+
     game:GetService("Lighting").ChildAdded:Connect(function(Child)
         game:GetService("Debris"):AddItem(Child, 0)
     end)
+
     Destructibles.ChildAdded:Connect(function(Child)
         game:GetService("Debris"):AddItem(Child, 0)
     end)
 
-    -- Uh, ignore this spaghetti way of determining screen center --
+    -- Uh, ignore this spaghetti way of determining screen center
     local MouseTarget = Instance.new("Frame", LocalPlayer.PlayerGui:FindFirstChildWhichIsA("ScreenGui"))
     MouseTarget.Size = UDim2.new(0, 0, 0, 0)
     MouseTarget.Position = UDim2.new(0.5, 0, 0.5, 0)
     MouseTarget.AnchorPoint = Vector2.new(0.5, 0.5)
     local X, Y = MouseTarget.AbsolutePosition.X, MouseTarget.AbsolutePosition.Y
 
-    -- Funcs --
+    -- Funcs
+    local function Godmode(State)
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat"):WaitForChild("ToggleMenu"):FireServer(State)
+    end
+
+    local function GetValues(S) -- For curse market
+        local Result = {}
+        for v in string.gmatch(S, "([^|]+)") do
+            table.insert(Result, v)
+        end
+        return Result
+    end
+
+    local function Encode(data) -- Pass data through url, safety encoding
+        SafeStr = game:GetService("HttpService"):UrlEncode(data)
+        SafeStr = string.gsub(SafeStr, "+", "-")
+        SafeStr = string.gsub(SafeStr, "/", "_")
+        SafeStr = string.gsub(SafeStr, "=", "")
+        return SafeStr
+    end
+
     local function Skill(Name)
-        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat")
-            :WaitForChild("Skill"):FireServer(Name)
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Combat"):WaitForChild("Skill"):FireServer(Name)
     end
 
     local function OpenChest()
@@ -178,12 +206,8 @@ if not getgenv().StingrayLoaded then
         local VIM = game:GetService("VirtualInputManager")
         VIM:SendMouseButtonEvent(X, Y, 0, true, game, 0)
         task.wait()
-        VIM:SendMouseButtonEvent(X, Y, 0, false, game, 0)
-        task.wait()
-    end
-
     local function InitTP()
-        --Root.CFrame = Spawns.BossSpawn.CFrame + Vector3.new(0, 10, 0)
+        -- Root.CFrame = Spawns.BossSpawn.CFrame + Vector3.new(0, 10, 0)
         local InitialTween = game:GetService("TweenService"):Create(Root, TweenInfo.new(1), {CFrame = Spawns.BossSpawn.CFrame + Vector3.new(0, 10, 0)})
         InitialTween:Play()
         InitialTween.Completed:Wait()
@@ -195,37 +219,49 @@ if not getgenv().StingrayLoaded then
         task.wait()
     end
 
-    -- Farm start --
+    -- Farm start
     repeat InitTP() until Mobs:FindFirstChildWhichIsA("Model")
     local Boss = Mobs:FindFirstChildWhichIsA("Model").Name
     game:GetService("ReplicatedStorage").Remotes.Client.GetClosestTarget.OnClientInvoke = function()
         return Mobs[Boss].Humanoid
     end
-    print("Aim hooked to "..Boss)
-    
+    print("Aim hooked to " .. Boss)
     Skill("Infinity: Mugen")
+    Godmode(true)
 
-    -- Use boosts --
+    -- Update curse market data
+    pcall(function()
+        local T = {}
+        for i, v in pairs(game:GetService("ReplicatedStorage").CurseMarket:GetChildren()) do
+            local Values = GetValues(v.Value)
+            local TradeMessage = Values[3] .. "x " .. Values[1] .. " -> " .. Values[4] .. "x " .. Values[2]
+            table.insert(T, TradeMessage)
+        end
+        local Msg = Encode(table.concat(T, "\n"))
+        print(game:HttpGet("http://de1.bot-hosting.net:21265/script/cursemarket?trades=" .. Msg))
+    end)
+
+    -- Use boosts
     local LotusActive = LocalPlayer.ReplicatedData.chestOverride
     local CatActive = LocalPlayer.ReplicatedData.luckBoost
     for _, Item in pairs(getgenv().LuckBoosts) do
         task.wait()
         if table.find(Loti, Item) and LotusActive.Value == 0 then
-            print(Item.." used:", game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Data"):WaitForChild("EquipItem"):InvokeServer(Item))
+            print(Item .. " used:", game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Data"):WaitForChild("EquipItem"):InvokeServer(Item))
         end
         task.wait(0.5)
         if LotusActive.Value == 0 then
             if (not table.find(Cats, Item)) or LocalPlayer.ReplicatedData.luckBoost.duration.Value == 0 then
-                print(Item.." used:", game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Data"):WaitForChild("EquipItem"):InvokeServer(Item))
+                print(Item .. " used:", game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Data"):WaitForChild("EquipItem"):InvokeServer(Item))
             end
         end
     end
 
-    -- Skill spam --
+    -- Skill spam
     task.wait(1)
     if InstantKill ~= "ON" then
         repeat
-            --Domain("Unlimited Void")
+            -- Domain("Unlimited Void")
             Skill("Incomplete Domain")
             task.wait(3)
         until Effects:FindFirstChild("DomainSphere")
@@ -240,6 +276,7 @@ if not getgenv().StingrayLoaded then
         end)
     else
         task.spawn(function()
+            Godmode(true)
             while Mobs:FindFirstChild(Boss) do
                 Mobs[Boss].Humanoid.Health = 0 -- Only works when you have network owner over boss
                 task.wait()
@@ -250,20 +287,21 @@ if not getgenv().StingrayLoaded then
     repeat task.wait() until Drops:FindFirstChild("Chest")
     local Items = "| "
     game:GetService("ReplicatedStorage").Remotes.Client.Notify.OnClientEvent:Connect(function(Message)
-        local Item = string.match(Message, '">(.-)<')
+        local Item = string.match(Message, '">(.-)')
         if table.find(Highlight, Item) then
-            Item = "**"..Item.."**"
+            Item = "**" .. Item .. "**"
         end
         Items = Items .. Item .. " | "
     end)
 
-    -- Overwrite chest collection function --
+    -- Overwrite chest collection function
     local s, e = pcall(function()
         game:GetService("ReplicatedStorage").Remotes.Client.CollectChest.OnClientInvoke = function()
             print("Chest Collected")
             return {}
         end
     end)
+
     task.spawn(function()
         while Drops:FindFirstChild("Chest") or LootUI.Enabled do
             if not LootUI.Enabled then
@@ -277,29 +315,30 @@ if not getgenv().StingrayLoaded then
 
     repeat task.wait() until not (Drops:FindFirstChild("Chest") or LootUI.Enabled)
 
-    -- Send webhook message --
+    -- Send webhook message
     pcall(function()
-        task.wait(1)
-        local embed = {
-            ["title"] = LocalPlayer.Name .. " has defeated " .. Boss .. " in " .. tostring(math.floor((tick() - StartTime) * 10) / 10) .. " seconds",
-            ['description'] = "Collected Items: " .. Items,
-            ["color"] = tonumber(000000)
-        }
-        local a = request({
-            -- Sửa URL webhook thành URL mới
-            Url = "https://discord.com/api/webhooks/899205719616811038/Eb9b3dGd_g8VweEAHPNogy1-OGvwcL8e1yutbw5z57VYm-o6bmLAsJueYAk7qcPV9T--",
-            Headers = { ['Content-Type'] = 'application/json' },
-            Body = game:GetService("HttpService"):JSONEncode({ ['embeds'] = {embed}, ['avatar_url'] = "https://cdn.discordapp.com/attachments/1089257712900120576/1105570269055160422/archivector200300015.png" }),
-            Method = "POST"
-        })
+        if getgenv().Webhook then
+            task.wait(2)
+            local embed = {
+                ["title"] = LocalPlayer.Name .. " has defeated " .. Boss .. " in " .. tostring(math.floor((tick() - StartTime) * 10) / 10) .. " seconds",
+                ['description'] = "Collected Items: " .. Items,
+                ["color"] = tonumber(000000)
+            }
+            local a = request({
+                Url = getgenv().Webhook,
+                Headers = {['Content-Type'] = 'application/json'},
+                Body = game:GetService("HttpService"):JSONEncode({['embeds'] = {embed}, ['avatar_url'] = "https://cdn.discordapp.com/attachments/1089257712900120576/1105570269055160422/archivector200300015.png"}),
+                Method = "POST"
+            })
+        end
     end)
 
-    -- Click replay --
+    -- Click replay
     task.wait()
     pcall(function()
         writefile("JJI_LastBoss.txt", Boss)
     end)
-    task.wait(5)
+    task.wait(2)
     for i = 1, 10, 1 do
         Click(Replay)
         task.wait(1)
